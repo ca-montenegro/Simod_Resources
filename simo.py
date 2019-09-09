@@ -78,6 +78,7 @@ def objective(params):
                                                                        bpmn, rep),
                                                          ignore_index=True,
                                                          sort=False)
+                    print('Analysis')
                     sim_values.append(gen.mesurement(process_stats, settings, rep))
             except:
                 status = STATUS_FAIL

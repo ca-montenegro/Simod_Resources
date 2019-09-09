@@ -18,6 +18,34 @@ def mesurement(data, settings, rep, ramp_io_perc = 0.2):
     simulation_data = reformat_events(list(filter(lambda x: x['source']=='simulation'
                                                   and x['run_num']==(rep + 1), filtered_data)),
                                alias, ['task','role'])
+    simult_data_KPI = reformat_events(list(filter(lambda x: x['source']=='simulation'
+                                                  and x['run_num']==(rep+1),filtered_data)),None,None)
+    overall_kpi = dict(repetition = rep + 1,
+                       overall_process_time = 0,
+                       overall_waiting_time = 0,
+                       overall_cycle_time = 0,
+                       overall_avg_process_time = 0,
+                       overall_avg_waiting_time = 0,
+                       overall_avg_cycle_time = 0)
+    for k,v in enumerate(simult_data_KPI):
+        avg_processe = (np.mean(v['processing']))
+        v['avg_process_time'] = avg_processe
+        overall_kpi['overall_process_time'] += avg_processe
+        a = np.sum(v['processing'])
+        b = np.sum(v['waiting'])
+        sumCycleTime = (np.sum([a,b]))
+        v['cycle_time'] = sumCycleTime
+        overall_kpi['overall_cycle_time'] = overall_kpi['overall_cycle_time'] + sumCycleTime
+        avg_waiti = (np.mean(v['waiting']))
+        v['avg_waiting_time'] = avg_waiti
+        overall_kpi['overall_waiting_time'] = overall_kpi['overall_waiting_time'] + avg_waiti
+    overall_kpi['overall_avg_process_time'] = overall_kpi['overall_process_time'] / len(simult_data_KPI)
+    overall_kpi['overall_avg_waiting_time'] = overall_kpi['overall_waiting_time']/ len(simult_data_KPI)
+    overall_kpi['overall_avg_cycle_time'] = overall_kpi['overall_cycle_time'] / len(simult_data_KPI)
+    listOverall_kpi = list()
+    listOverall_kpi.append(overall_kpi)
+    print_kpi(settings,simult_data_KPI)
+    print_kpis(settings,listOverall_kpi)
     num_traces = int(len(simulation_data) * ramp_io_perc)
     simulation_data = simulation_data[num_traces:-num_traces]
     temp_log_data = random.sample(log_data, len(simulation_data))
@@ -33,6 +61,34 @@ def mesurement(data, settings, rep, ramp_io_perc = 0.2):
     similarity['act_norm'] = np.mean([x['sim_score'] for x in sim_data])
     print_measures(settings, sim_data)   
     return similarity
+
+def print_kpis(settings,overall_kpi):
+    if os.path.exists(os.path.join(os.path.join(settings['output'],
+                                                'sim_data',
+                                                'overall_kpi.csv'))):
+        sup.create_csv_file(overall_kpi,
+                            os.path.join(os.path.join(settings['output'],
+                                                'sim_data',
+                                                'overall_kpi.csv')), mode='a')
+    else:
+        sup.create_csv_file_header(overall_kpi,
+                                   os.path.join(os.path.join(settings['output'],
+                                                'sim_data',
+                                                'overall_kpi.csv')))
+
+def print_kpi(settings,simult_kpi):
+    if os.path.exists(os.path.join(os.path.join(settings['output'],
+                                                'sim_data',
+                                                'Simulation_kpi.csv'))):
+        sup.create_csv_file(simult_kpi,
+                            os.path.join(os.path.join(settings['output'],
+                                                'sim_data',
+                                                'Simulation_kpi.csv')), mode='a')
+    else:
+        sup.create_csv_file_header(simult_kpi,
+                                   os.path.join(os.path.join(settings['output'],
+                                                'sim_data',
+                                                'Simulation_kpi.csv')))
 
 def print_measures(settings, measurements):
     if os.path.exists(os.path.join(os.path.join(settings['output'],
@@ -144,27 +200,46 @@ def scaling_data(data):
 
 def reformat_events(data, alias, features):
     # Add alias
-    if isinstance(features, list):
-        [x.update(dict(alias=alias[(x[features[0]],x[features[1]])])) for x in data]   
+    if(alias!=None):
+        if isinstance(features, list):
+            [x.update(dict(alias=alias[(x[features[0]],x[features[1]])])) for x in data]
+        else:
+            [x.update(dict(alias=alias[x[features]])) for x in data]
+        # Define cases
+        cases = sorted(list(set([x['caseid'] for x in data])))
+        # Reformat dataset
+        temp_data = list()
+        for case in cases:
+            temp_dict= dict(caseid=case,profile='', processing=list(), proc_act_norm=list(),
+                            waiting=list(), wait_act_norm=list())
+            events = sorted(list(filter(lambda x: x['caseid']==case, data)), key=itemgetter('start_timestamp'))
+            for i in range(0, len(events)):
+                temp_dict['profile'] = temp_dict['profile'] + events[i]['alias']
+                temp_dict['processing'].append(events[i]['processing_time'])
+                temp_dict['proc_act_norm'].append(events[i]['proc_act_norm'])
+                temp_dict['waiting'].append(events[i]['waiting_time'])
+                temp_dict['wait_act_norm'].append(events[i]['wait_act_norm'])
+            temp_dict['start_time'] = events[0]['start_timestamp']
+            temp_data.append(temp_dict)
+        return sorted(temp_data, key=itemgetter('start_time'))
     else:
-        [x.update(dict(alias=alias[x[features]])) for x in data]
-    # Define cases
-    cases = sorted(list(set([x['caseid'] for x in data])))
-    # Reformat dataset
-    temp_data = list()
-    for case in cases:
-        temp_dict= dict(caseid=case,profile='', processing=list(), proc_act_norm=list(),
-                        waiting=list(), wait_act_norm=list())
-        events = sorted(list(filter(lambda x: x['caseid']==case, data)), key=itemgetter('start_timestamp'))
-        for i in range(0, len(events)):
-            temp_dict['profile'] = temp_dict['profile'] + events[i]['alias']
-            temp_dict['processing'].append(events[i]['processing_time'])
-            temp_dict['proc_act_norm'].append(events[i]['proc_act_norm'])
-            temp_dict['waiting'].append(events[i]['waiting_time'])
-            temp_dict['wait_act_norm'].append(events[i]['wait_act_norm'])
-        temp_dict['start_time'] = events[0]['start_timestamp']
-        temp_data.append(temp_dict)
-    return sorted(temp_data, key=itemgetter('start_time'))
+        # Define cases
+        cases = sorted(list(set([x['caseid'] for x in data])))
+        # Reformat dataset
+        temp_data = list()
+        for case in cases:
+            temp_dict = dict(caseid=case, resource=list(), processing=list(),
+                             waiting=list(), avg_process_time=list(),avg_waiting_time=list(),cycle_time=list())
+            events = sorted(list(filter(lambda x: x['caseid']==case, data)), key=itemgetter('start_timestamp'))
+            for i in range(0, len(events)):
+                temp_dict['resource'].append(events[i]['resource'])
+                temp_dict['processing'].append(events[i]['processing_time'])
+                #temp_dict['proc_act_norm'].append(events[i]['proc_act_norm'])
+                temp_dict['waiting'].append(events[i]['waiting_time'])
+                #temp_dict['wait_act_norm'].append(events[i]['wait_act_norm'])
+            temp_dict['start_time'] = events[0]['start_timestamp']
+            temp_data.append(temp_dict)
+        return sorted(temp_data, key=itemgetter('start_time'))
 
 
 def damerau_levenshtein_distance(comp_sec):

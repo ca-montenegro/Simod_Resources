@@ -11,7 +11,7 @@ import networkx as nx
 import itertools
 
 # -- Extract parameters --
-def extract_parameters(log, bpmn, process_graph,flag):
+def extract_parameters(log, bpmn, process_graph,flag,k,sim_percentage):
     if bpmn != None and log != None:
         bpmnId = bpmn.getProcessId()
         startEventId = bpmn.getStartEventId()
@@ -19,9 +19,9 @@ def extract_parameters(log, bpmn, process_graph,flag):
         #-------------------------------------------------------------------
         # Analysing resource pool LV917 or 247
         if(flag==1):
-            roles, resource_table = rl.read_resource_pool(log,sim_percentage=0.0,k=24)
+            roles, resource_table = rl.read_resource_pool(log,sim_percentage=0.0,k=k)
         elif(flag==2):
-            roles, resource_table = rl.read_resource_pool(log, drawing=False, sim_percentage=0.7)
+            roles, resource_table = rl.read_resource_pool(log, drawing=False, sim_percentage=sim_percentage)
         resource_pool, time_table, resource_table = sch.analize_schedules(resource_table, log, True, '247')
         #-------------------------------------------------------------------
         # Process replaying

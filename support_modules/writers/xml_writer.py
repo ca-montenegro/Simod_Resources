@@ -16,29 +16,29 @@ def create_file(output_file, element):
 		f.write(element)
 	f.close()
 
-def create_resourceTable_file(output_file,resource_table,roles,flag):
+def create_resourceTable_file(output_file,resource_table,roles,flag,sim_percentage):
 	if flag==1:
 		title = ['Activity table: Activities grouped by K frequent resources']
 		activityTable = pd.DataFrame(title)
 		res = pd.DataFrame(resource_table)
 		roles = pd.DataFrame(roles)
 		activityTable = pd.concat([activityTable, roles, res])
-		activityTable.to_csv(output_file.split('.')[0] + 'ActivityTable.csv', sep=';')
+		activityTable.to_csv(output_file.split('.')[0] + 'ActivityTable.csv')
 	elif flag==2:
-		title = ['Resource table: Resources grouped by tasks performed']
+		title = ['Resource table: Resources grouped by tasks performed ' + str(sim_percentage)]
 		resourcesTable = pd.DataFrame(title)
 		res = pd.DataFrame(resource_table)
 		roles = pd.DataFrame(roles)
 		resourcesTable = pd.concat([resourcesTable, roles, res])
-		resourcesTable.to_csv(output_file.split('.')[0] + 'ResourceTable.csv', sep=';')
+		resourcesTable.to_csv(output_file.split('.')[0] + 'ResourceTable.csv')
 
 #-------------- kernel --------------
-def print_parameters(bpmn_input, output_file, parameters):
+def print_parameters(bpmn_input, output_file, parameters,sim_percentage):
 	my_doc = xml_template(parameters['arrival_rate'], parameters['time_table'],
 		parameters['resource_pool'], parameters['elements_data'], parameters['sequences'], parameters['instances'])
 	root = append_parameters(bpmn_input,my_doc)
 	create_file(output_file, etree.tostring(root, pretty_print=True))
-	create_resourceTable_file(output_file,parameters['resource_table'],parameters['roles'],parameters['flag'])
+	create_resourceTable_file(output_file,parameters['resource_table'],parameters['roles'],parameters['flag'],sim_percentage)
 	#create_rolesByFreqAct_file(output_file, parameters['rolesByFreqAct'])
 
 def xml_template(arrival_rate, time_table, resource_pool, elements_data, sequences, instances):

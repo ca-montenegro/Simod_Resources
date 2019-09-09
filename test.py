@@ -83,102 +83,175 @@ def measure_stats(settings, bpmn, rep):
 
 
 def objective(params):
+    for f in params['flag']:
+        if f==1:
+            for k in range(params['k'][0], params['k'][1] + 1):
+                print('k = ' + str(k))
+                settings = sim.read_settings(params)
+                params['output'] = settings['output']
+                # Output folder creation
+                if not os.path.exists(settings['output']):
+                    os.makedirs(settings['output'])
+                    os.makedirs(os.path.join(settings['output'], 'sim_data'))
+                copyfile(os.path.join(settings['input'], settings['file']),
+                         os.path.join(settings['output'], settings['file']))
+                log = lr.LogReader(os.path.join(settings['output'], settings['file']),
+                                   settings['timeformat'])
+                # Execution steps
+                mining_structure(settings, params['epsilon'], params['eta'])
+                bpmn = br.BpmnReader(os.path.join(settings['output'],
+                                                  settings['file'].split('.')[0] + '.bpmn'))
+                process_graph = gph.create_process_structure(bpmn)
 
-    settings = sim.read_settings(params)
-    params['output'] = settings['output']
-    # Output folder creation
-    if not os.path.exists(settings['output']):
-        os.makedirs(settings['output'])
-        os.makedirs(os.path.join(settings['output'], 'sim_data'))
-    copyfile(os.path.join(settings['input'], settings['file']),
-             os.path.join(settings['output'], settings['file']))
-    log = lr.LogReader(os.path.join(settings['output'], settings['file']),
-                       settings['timeformat'])
-    # Execution steps
-    mining_structure(settings, params['epsilon'], params['eta'])
-    bpmn = br.BpmnReader(os.path.join(settings['output'],
-                                      settings['file'].split('.')[0] + '.bpmn'))
-    process_graph = gph.create_process_structure(bpmn)
+                # Evaluate alignment
+                # chk.evaluate_alignment(process_graph, log, settings)
 
-    # Evaluate alignment
-    # chk.evaluate_alignment(process_graph, log, settings)
+                print("-- Mining Simulation Parameters --")
+                parameters, process_stats = par.extract_parameters(log, bpmn, process_graph, flag=f, k=k,
+                                                                   sim_percentage=0.0)
+                xml.print_parameters(os.path.join(settings['output'],
+                                                  settings['file'].split('.')[0] + '.bpmn'),
+                                     os.path.join(settings['output'],
+                                                  settings['file'].split('.')[0] + '.bpmn'),
+                                     parameters,sim_percentage=0)
 
-    print("-- Mining Simulation Parameters --")
-    parameters, process_stats = par.extract_parameters(log, bpmn, process_graph, flag=2)
-    xml.print_parameters(os.path.join(settings['output'],
-                                      settings['file'].split('.')[0] + '.bpmn'),
-                         os.path.join(settings['output'],
-                                      settings['file'].split('.')[0] + '.bpmn'),
-                         parameters)
+                response = dict()
+                status = STATUS_OK
+                sim_values = list()
+                if settings['simulation']:
+                    if settings['analysis']:
+                        process_stats = pd.DataFrame.from_records(process_stats)
+                    for rep in range(settings['repetitions']):
+                        print("Experiment #" + str(rep + 1))
+                        try:
+                            simulate(settings, rep)
+                            if settings['analysis']:
+                                process_stats = process_stats.append(measure_stats(settings,
+                                                                                   bpmn, rep),
+                                                                     ignore_index=True,
+                                                                     sort=False)
+                                sim_values.append(gen.mesurement(process_stats, settings, rep))
+                        except Exception as e:
+                            print('Failed ' + str(e))
+                            status = STATUS_FAIL
+                            break
 
-    response = dict()
-    status = STATUS_OK
-    sim_values = list()
-    if settings['simulation']:
-        if settings['analysis']:
-            process_stats = pd.DataFrame.from_records(process_stats)
-        for rep in range(settings['repetitions']):
-            print("Experiment #" + str(rep + 1))
-            try:
-                simulate(settings, rep)
-                if settings['analysis']:
-                    process_stats = process_stats.append(measure_stats(settings,
-                                                                       bpmn, rep),
-                                                         ignore_index=True,
-                                                         sort=False)
-                    sim_values.append(gen.mesurement(process_stats, settings, rep))
-            except:
-                status = STATUS_FAIL
-                break
-
-    if status == STATUS_OK:
-        loss = (1 - np.mean([x['act_norm'] for x in sim_values]))
-        if loss < 0:
-            response = {'loss': loss, 'params': params, 'status': STATUS_FAIL}
+                if status == STATUS_OK:
+                    loss = (1 - np.mean([x['act_norm'] for x in sim_values]))
+                    if loss < 0:
+                        response = {'loss': loss, 'params': params, 'status': STATUS_FAIL}
+                    else:
+                        response = {'loss': loss, 'params': params, 'status': status}
+                else:
+                    response = {'params': params, 'status': status}
+                print(response)
         else:
-            response = {'loss': loss, 'params': params, 'status': status}
-    else:
-        response = {'params': params, 'status': status}
-    print(response)
+            for sim_percentageRaw in range(params['sim_percentage'],110,10):
+                sim_percentage = sim_percentageRaw/100
+                print('sim_percentage ' + str(sim_percentage))
+                settings = sim.read_settings(params)
+                params['output'] = settings['output']
+                # Output folder creation
+                if not os.path.exists(settings['output']):
+                    os.makedirs(settings['output'])
+                    os.makedirs(os.path.join(settings['output'], 'sim_data'))
+                copyfile(os.path.join(settings['input'], settings['file']),
+                         os.path.join(settings['output'], settings['file']))
+                log = lr.LogReader(os.path.join(settings['output'], settings['file']),
+                                   settings['timeformat'])
+                # Execution steps
+                mining_structure(settings, params['epsilon'], params['eta'])
+                bpmn = br.BpmnReader(os.path.join(settings['output'],
+                                                  settings['file'].split('.')[0] + '.bpmn'))
+                process_graph = gph.create_process_structure(bpmn)
+
+                # Evaluate alignment
+                # chk.evaluate_alignment(process_graph, log, settings)
+
+                print("-- Mining Simulation Parameters --")
+                parameters, process_stats = par.extract_parameters(log, bpmn, process_graph, flag=f, k=0,
+                                                                   sim_percentage=sim_percentage)
+                xml.print_parameters(os.path.join(settings['output'],
+                                                  settings['file'].split('.')[0] + '.bpmn'),
+                                     os.path.join(settings['output'],
+                                                  settings['file'].split('.')[0] + '.bpmn'),
+                                     parameters,sim_percentage=sim_percentage)
+
+                response = dict()
+                status = STATUS_OK
+                sim_values = list()
+                if settings['simulation']:
+                    if settings['analysis']:
+                        process_stats = pd.DataFrame.from_records(process_stats)
+                    for rep in range(settings['repetitions']):
+                        print("Experiment #" + str(rep + 1))
+                        try:
+                            simulate(settings, rep)
+                            if settings['analysis']:
+                                process_stats = process_stats.append(measure_stats(settings,
+                                                                                   bpmn, rep),
+                                                                     ignore_index=True,
+                                                                     sort=False)
+                                sim_values.append(gen.mesurement(process_stats, settings, rep))
+                        except Exception as e:
+                            print('Failed ' + str(e))
+                            status = STATUS_FAIL
+                            break
+
+                if status == STATUS_OK:
+                    loss = (1 - np.mean([x['act_norm'] for x in sim_values]))
+                    if loss < 0:
+                        response = {'loss': loss, 'params': params, 'status': STATUS_FAIL}
+                    else:
+                        response = {'loss': loss, 'params': params, 'status': status}
+                else:
+                    response = {'params': params, 'status': status}
+                print(response)
     return response
 def main(argv):
     space = {
         'file': 'PurchasingExample.xes.gz',
-        'epsilon': hp.uniform('epsilon', 0.0, 1.0),
-        'eta': hp.uniform('eta', 0.0, 1.0),
+        #'epsilon': hp.uniform('epsilon', 0.0, 1.0),
+        'epsilon':1,
+        'eta':1,
+        #'eta': hp.uniform('eta', 0.0, 1.0),
         'alg_manag': hp.choice('alg_manag', ['replacement',
                                              'trace_alignment',
                                              'removal']),
         'repetitions': 2,
         'simulation': True,
-        'analysis':True
+        'analysis':True,
+        'flag':[1,2],
+        'k':[1,24],
+        'sim_percentage':10
     }
+    objective(space)
     ## Trials object to track progress
-    bayes_trials = Trials()
-    max_evals = 50
+    #bayes_trials = Trials()
+    #max_evals = 50
     ## Optimize
-    best = fmin(fn=objective, space=space, algo=tpe.suggest,
-                max_evals=max_evals, trials=bayes_trials, show_progressbar=False)
-    print('Printing best')
-    print(best)
+    #best = fmin(fn=objective, space=space, algo=tpe.suggest,
+    #           max_evals=max_evals, trials=bayes_trials, show_progressbar=False)
+    #print('Printing best')
+    #print(best)
     # Save results
-    measurements = list()
-    for res in bayes_trials.results:
-        measurements.append({
-            'loss': res['loss'],
-            'alg_manag': res['params']['alg_manag'],
-            'epsilon': res['params']['epsilon'],
-            'eta': res['params']['eta'],
-            'status': res['status'],
-            'output': res['params']['output']
-        })
-    config = cp.ConfigParser(interpolation=None)
-    config.read("./config.ini")
-    sup.create_csv_file_header(measurements,
-                               os.path.join(config.get('FOLDERS', 'outputs'),
-                                            config.get('EXECUTION', 'filename')
-                                            .split('.')[0] + '_' +
-                                            sup.folder_id() + '.csv'))
+    #measurements = list()
+    # for res in bayes_trials.results:
+    #     measurements.append({
+    #         'loss': res['loss'],
+    #         'alg_manag': res['params']['alg_manag'],
+    #         'epsilon': res['params']['epsilon'],
+    #         'eta': res['params']['eta'],
+    #         'status': res['status'],
+    #         'output': res['params']['output']
+    #     })
+    # config = cp.ConfigParser(interpolation=None)
+    # config.read("./config.ini")
+    # sup.create_csv_file_header(measurements,
+    #                            os.path.join(config.get('FOLDERS', 'outputs'),
+    #                                         config.get('EXECUTION', 'filename')
+    #                                         .split('.')[0] + '_' +
+    #                                         sup.folder_id() + '.csv'))
 #print(parameters.resource_pool)
 #print()
 #print(parameters.time_table)
