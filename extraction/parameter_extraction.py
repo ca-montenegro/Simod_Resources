@@ -33,6 +33,15 @@ def extract_parameters(log, bpmn, process_graph,flag,k,sim_percentage):
             if(roleArray!=[]):
                 role = roleArray[0]['role']
             stat['role'] = role
+            stat['diff_time_res'] = (stat['end_timestamp']-stat['start_timestamp']).total_seconds()
+
+        for resource in resource_table:
+            total_diff_time = 0
+            statArray = list(filter(lambda x: x['resource']==resource['resource'],process_stats))
+            if(statArray!=[]):
+                for stat in statArray:
+                    total_diff_time+=stat['diff_time_res']
+            resource['diff_time_res'] = total_diff_time
 
         #-------------------------------------------------------------------
         # Determination of first tasks for calculate the arrival rate

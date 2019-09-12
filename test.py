@@ -210,7 +210,7 @@ def objective(params):
     return response
 def main(argv):
     space = {
-        'file': 'PurchasingExample.xes.gz',
+        'file': 'PurchasingExampleEditable1.xes',
         #'epsilon': hp.uniform('epsilon', 0.0, 1.0),
         'epsilon':1,
         'eta':1,
@@ -221,8 +221,8 @@ def main(argv):
         'repetitions': 2,
         'simulation': True,
         'analysis':True,
-        'flag':[1,2],
-        'k':[1,24],
+        'flag':[2],
+        'k':[1,2],
         'sim_percentage':10
     }
     objective(space)

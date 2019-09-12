@@ -74,10 +74,18 @@ class LogReader(object):
         root = tree.getroot()
         if ns_include:
             ns = {'xes': root.tag.split('}')[0].strip('{')}
-            tags = dict(trace='xes:trace',string='xes:string',event='xes:event',date='xes:date')
+            tags = dict(trace='xes:trace',string='xes:string',event='xes:event',date='xes:date',resourcesCost='xes:resourcesCost',resources='xes:resource')
         else:
             ns = {'xes':''}
-            tags = dict(trace='trace',string='string',event='event',date='date')
+            tags = dict(trace='trace',string='string',event='event',date='date',resourcesCost='resourcesCost',resources='xes:resource')
+        resourcesCosts = list()
+        resourcesCost = root.findall(tags['resourcesCost'],ns)
+        for resource in resourcesCost:
+            res = resource.findall(tags['resources'],ns)
+            for resi in res:
+                resourceName = resi.attrib['key']
+                resourceCost = resi.attrib['value']
+                resourcesCosts.append(dict(resourceName=resourceName,resourceCost=resourceCost))
         traces = root.findall(tags['trace'], ns)
         i = 0
         sup.print_performed_task('Reading log traces ')
@@ -112,8 +120,9 @@ class LogReader(object):
                         except ValueError:
                             timestamp = datetime.datetime.strptime(timestamp, timeformat)
                 if not (task == '0' or task == '-1'):
+                    #ToDO: Include in the dict the costxhour x resource.
                     temp_data.append(
-                        dict(caseid=caseid, task=task, event_type=event_type, user=user, start_timestamp=timestamp,
+                        dict(caseid=caseid, task=task, event_type=event_type, user=user,costxhour=list(filter(lambda x: x['resourceName']==user,resourcesCosts))[0]['resourceCost'], start_timestamp=timestamp,
                              end_timestamp=complete_timestamp))
             i += 1
         raw_data = temp_data
@@ -141,7 +150,7 @@ class LogReader(object):
                         for j, _ in enumerate(finish_events):
                             if start_events[i]['task'] == finish_events[j]['task']:
                                 temp_trace.append(dict(caseid=case, task=start_events[i]['task'], event_type=start_events[i]['task'],
-                                     user=start_events[i]['user'], start_timestamp=start_events[i]['start_timestamp'], end_timestamp=finish_events[j]['start_timestamp']))
+                                     user=start_events[i]['user'], costxhour = start_events[i]['costxhour'],start_timestamp=start_events[i]['start_timestamp'], end_timestamp=finish_events[j]['start_timestamp'],dif_timestamp=finish_events[j]['start_timestamp']-start_events[i]['start_timestamp']))
                                 match = True
                                 break
                         if match:

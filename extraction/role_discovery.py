@@ -125,7 +125,7 @@ def graph_network(g, sub_graphs):
     plt.show() # display
 
 
-def role_definition(sub_graphs,users,taskResourcesNames):
+def role_definition(sub_graphs,users,taskResourcesNames,data):
     records = list()
     if sub_graphs!=None:
         for i in range(0,len(sub_graphs)):
@@ -140,7 +140,11 @@ def role_definition(sub_graphs,users,taskResourcesNames):
         resource_table = list()
         for record in records:
             for member in record['members']:
-                resource_table.append(dict(role=record['role'], resource=member))
+                diff_time = 0
+                registers = list(filter(lambda x:x[1]==member,data))
+                for register in registers:
+                    diff_time+=register[3].total_seconds()
+                resource_table.append(dict(role=record['role'], resource=member,costxhour=list(filter(lambda x:x[1]==member,data))[0][2],dif_timestamp=diff_time))
         return records, resource_table
     elif taskResourcesNames!=None:
         for i in range(0,len(taskResourcesNames)):
@@ -193,7 +197,7 @@ def role_discovery(data, drawing, sim_percentage):
     sub_graphs = list(nx.connected_component_subgraphs(g))
     sup.print_progress(((80 / 100)* 100),'Analysing resource pool ')
     # role definition from graph
-    roles = role_definition(sub_graphs,users, taskResourcesNames = None)
+    roles = role_definition(sub_graphs,users, taskResourcesNames = None,data = data)
     # plot creation (optional)
     if drawing == True:
         graph_network(g, sub_graphs)
@@ -260,13 +264,13 @@ def read_resource_pool(log, separator=None, drawing=False, sim_percentage=0.0,k=
         filtered_list = list()
         for row in log.data:
             if row['task'] != 'End' and row['user'] != 'AUTO':
-                filtered_list.append([row['task'],row['user']])
+                filtered_list.append([row['task'],row['user'],row['costxhour'],row['dif_timestamp']])
         return role_discovery(filtered_list, drawing, sim_percentage)
     elif (separator == None and k > 0):
         filtered_list = list()
         for row in log.data:
             if row['task'] != 'End' and row['user'] != 'AUTO':
-                filtered_list.append([row['task'], row['user']])
+                filtered_list.append([row['task'], row['user'],row['costxhour'],row['dif_timestamp']])
         return role_freqAct_discovery(filtered_list, sim_percentage,k)
     else:
         raw_list = list()
