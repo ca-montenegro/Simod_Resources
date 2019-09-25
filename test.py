@@ -50,19 +50,33 @@ def mining_structure(settings, epsilon, eta):
             os.path.join(settings['output'], settings['file']),
             os.path.join(settings['output'], settings['file'].split('.')[0])]
     subprocess.call(args)
+# def simulate(settings, rep):
+#     """Executes BIMP Simulations.
+#     Args:
+#         settings (dict): Path to jar and file names
+#         rep (int): repetition number
+#     """
+#     print("-- Executing BIMP Simulations --")
+#     args = ['java', '-jar', settings['bimp_path'],
+#             os.path.join(settings['output'],
+#                          settings['file'].split('.')[0]+'.bpmn'),
+#             '-csv',
+#             os.path.join(settings['output'], 'sim_data',
+#                          settings['file'].split('.')[0]+'_'+str(rep+1)+'.csv')]
+#     subprocess.call(args)
+
 def simulate(settings, rep):
-    """Executes BIMP Simulations.
+    """Executes SCYLLA Simulations.
     Args:
         settings (dict): Path to jar and file names
-        rep (int): repetition number
+        java -jar scylla_v{}.jar folder globalconfigfile.xml bpmnfile.bpmn simulationfile.xml TODO:outputfolder + rep
     """
-    print("-- Executing BIMP Simulations --")
-    args = ['java', '-jar', settings['bimp_path'],
-            os.path.join(settings['output'],
-                         settings['file'].split('.')[0]+'.bpmn'),
-            '-csv',
-            os.path.join(settings['output'], 'sim_data',
-                         settings['file'].split('.')[0]+'_'+str(rep+1)+'.csv')]
+    print("-- Executing SCYLLA Simulations --")
+    args = ['java', '-jar', settings['scylla_path'],
+            settings['output'],
+            settings['file'].split('.')[0]+'ScyllaGlobalConfig.xml',
+            settings['file'].split('.')[0]+'.bpmn',
+            settings['file'].split('.')[0]+'ScyllaSimuConfig.xml']
     subprocess.call(args)
 
 def measure_stats(settings, bpmn, rep,resource_table):
@@ -224,9 +238,9 @@ def main(argv):
         'alg_manag': hp.choice('alg_manag', ['replacement',
                                              'trace_alignment',
                                              'removal']),
-        'repetitions': 2,
-        'simulation': False,
-        'analysis':True,
+        'repetitions': 1,
+        'simulation': True,
+        'analysis':False,
         'flag':[2],
         'k':[1,2],
         'sim_percentage':70,

@@ -294,5 +294,5 @@ def read_settings(settings):
         settings['aligntype'] = os.path.join(settings['output'],
                                              config.get('ALIGNMENT', 'aligntype'))
     if settings['simulation']:
-        settings['bimp_path'] = reformat_path(config.get('EXTERNAL', 'bimp'))
+        settings['scylla_path'] = reformat_path(config.get('EXTERNAL', 'scylla'))
     return settings
