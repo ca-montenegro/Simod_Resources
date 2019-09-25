@@ -37,9 +37,86 @@ def print_parameters(bpmn_input, output_file, parameters,sim_percentage):
 	my_doc = xml_template(parameters['arrival_rate'], parameters['time_table'],
 		parameters['resource_pool'], parameters['elements_data'], parameters['sequences'], parameters['instances'])
 	root = append_parameters(bpmn_input,my_doc)
+	#my_doc_scylla = xml_template_scylla(parameters['arrival_rate'], parameters['time_table'],
+	#					  parameters['resource_pool'], parameters['elements_data'], parameters['sequences'],
+	#					  parameters['instances'])
+	#create_file(output_file.split('.')[0]+'GlobalConfig.bpmn',etree.tostring(my_doc_scylla,pretty_print=True,xml_declaration=True))
 	create_file(output_file, etree.tostring(root, pretty_print=True))
 	create_resourceTable_file(output_file,parameters['resource_table'],parameters['roles'],parameters['flag'],sim_percentage)
 	#create_rolesByFreqAct_file(output_file, parameters['rolesByFreqAct'])
+
+def xml_template_scylla(arrival_rate, time_table, resource_pool, elements_data, sequences, instances) :
+	#TODO: avgCost of resources for the default cost
+	E = ElementMaker(namespace="http://bsim.hpi.uni-potsdam.de/scylla/simModel",
+					 nsmap={'bsim': "http://bsim.hpi.uni-potsdam.de/scylla/simModel"})
+	GLOBALCONFIGURATION = E.globalConfiguration
+	RESOURCEASSIGNMENTORDER = E.resourceAssignmentOrder
+	RANDOMSEED = E.randomSeed
+	ZONEOFFSET = E.zoneOffset
+	TIMETABLES = E.timetables
+	TIMETABLE = E.timetable
+	TIMETABLEITEM = E.timetableItem
+	RESOURCEDATA = E.resourceData
+	DYNAMICRESOURCE = E.dynamicResource
+	INSTANCE = E.instance
+
+	rootid = 'GlobalConf_'+str(uuid.uuid4())
+	randomSeed = 3096
+
+	print(resource_pool)
+	print()
+	print(resource_pool[0]['instances'])
+
+	my_doc = GLOBALCONFIGURATION(
+		RESOURCEASSIGNMENTORDER("priority,simulationTime"),
+		RANDOMSEED(str(randomSeed)),
+		TIMETABLES(*[
+			TIMETABLE(
+				TIMETABLEITEM(from_=table['from_w'],
+							  to=table['to_w'],
+							  beginTime=table['from_t'],
+							  endTime=table['to_t']),
+					  id=table['id_t']) for table in time_table
+		]),
+		RESOURCEDATA(*[
+			DYNAMICRESOURCE(id=resource['id'],
+							name=resource['name'],
+							defaultQuantity=resource['total_amount'],
+							defaultCost=str(resource['avg_costxhour']),
+							defaultTimetableId=resource['timetable_id'],
+							defaultTimeUnit='SECONDS',
+							*[INSTANCE(name=instance['resource'],timetableId=resource['timetable_id'],cost=instance['costxhour'])for instance in resource['instances']]
+							)for resource in resource_pool
+		]),
+		id=rootid,targetNamespace="http://www.hpi.de"
+	)
+	return my_doc
+
+def xml_simu_scylla(arrival_rate, time_table, resource_pool, elements_data, sequences, instances):
+	E = ElementMaker(namespace="http://bsim.hpi.uni-potsdam.de/scylla/simModel",
+					 nsmap={'bsim': "http://bsim.hpi.uni-potsdam.de/scylla/simModel"})
+	DEFINITIONS = E.definitions
+	SIMULATIONCONFIGURATION = E.simulationConfiguration
+	STARTEVENT = E.startEvent
+	ARRIVALRATE = E.arrivalRate
+	EXPONENTIALDISTRIBUTION = E.exponentialDistribution
+	MEAN = E.mean
+	ORDER = E.order
+	TASK = E.task
+	DURATION = E.duration
+	ERLANGDISTRIBUTION = E.erlangDistribution
+	ORDER = E.order
+	RESOURCES = E.resource
+	RESOURCE = E.resouce
+	ASSIGNMENTDEFINITION = E.assignmentDefinition
+	TRIANGULARDISTRIBUTION = E.triangularDistribution
+	LOWER = E.lower
+	PEAK = E.peak
+	UPPER = E.upper
+	PRIORITY = E.priority
+
+
+
 
 def xml_template(arrival_rate, time_table, resource_pool, elements_data, sequences, instances):
 	E = ElementMaker(namespace="http://www.qbp-simulator.com/Schema201212", nsmap={'qbp' : "http://www.qbp-simulator.com/Schema201212"})
@@ -79,7 +156,13 @@ def xml_template(arrival_rate, time_table, resource_pool, elements_data, sequenc
 		),
 		RESOURCES(
 			*[
-				RESOURCE(id=res['id'],name=res['name'],totalAmount=res['total_amount'],costPerHour=res['costxhour'],timetableId=res['timetable_id']) for res in resource_pool
+				RESOURCE(
+					id=res['id'],
+					name=res['name'],
+					totalAmount=res['total_amount'],
+					costPerHour=str(res['avg_costxhour']),
+					timetableId=res['timetable_id']
+				) for res in resource_pool
 			]
 		),
 		ELEMENTS(

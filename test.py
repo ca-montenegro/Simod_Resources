@@ -23,6 +23,7 @@ from support_modules import support as sup
 from support_modules.readers import bpmn_reader as br
 from support_modules.readers import process_structure as gph
 from support_modules.writers import xml_writer as xml
+from support_modules.writers import xml_writer_scylla as xml_scylla
 from support_modules.analyzers import generalization as gen
 from support_modules.log_repairing import conformance_checking as chk
 
@@ -64,7 +65,7 @@ def simulate(settings, rep):
                          settings['file'].split('.')[0]+'_'+str(rep+1)+'.csv')]
     subprocess.call(args)
 
-def measure_stats(settings, bpmn, rep):
+def measure_stats(settings, bpmn, rep,resource_table):
     """Executes BIMP Simulations.
     Args:
         settings (dict): Path to jar and file names
@@ -75,7 +76,7 @@ def measure_stats(settings, bpmn, rep):
                                      settings['file'].split('.')[0] + '_'+str(rep + 1)+'.csv'),
                         timeformat)
     process_graph = gph.create_process_structure(bpmn)
-    _, _, temp_stats = rpl.replay(process_graph, temp, source='simulation', run_num=rep + 1)
+    _, _, temp_stats = rpl.replay(process_graph, temp,resource_table=resource_table, source='simulation', run_num=rep + 1)
     temp_stats = pd.DataFrame.from_records(temp_stats)
     role = lambda x: x['resource']
     temp_stats['role'] = temp_stats.apply(role, axis=1)
@@ -127,7 +128,7 @@ def objective(params):
                             simulate(settings, rep)
                             if settings['analysis']:
                                 process_stats = process_stats.append(measure_stats(settings,
-                                                                                   bpmn, rep),
+                                                                                   bpmn, rep,resource_table=parameters['resource_table']),
                                                                      ignore_index=True,
                                                                      sort=False)
                                 sim_values.append(gen.mesurement(process_stats, settings, rep))
@@ -169,13 +170,18 @@ def objective(params):
                 # chk.evaluate_alignment(process_graph, log, settings)
 
                 print("-- Mining Simulation Parameters --")
-                parameters, process_stats = par.extract_parameters(log, bpmn, process_graph, flag=f, k=0,
+                parameters, process_stats = par.extract_parameters(log, bpmn, process_graph, flag=f, k=0,simulator=params['simulator'],
                                                                    sim_percentage=sim_percentage)
                 xml.print_parameters(os.path.join(settings['output'],
                                                   settings['file'].split('.')[0] + '.bpmn'),
                                      os.path.join(settings['output'],
+                                                  settings['file'].split('.')[0] + 'Bimp.bpmn'),
+                                     parameters['bimp'],sim_percentage=sim_percentage)
+                xml_scylla.print_parameters(os.path.join(settings['output'],
                                                   settings['file'].split('.')[0] + '.bpmn'),
-                                     parameters,sim_percentage=sim_percentage)
+                                     os.path.join(settings['output'],
+                                                  settings['file'].split('.')[0] + 'Scylla.bpmn'),
+                                     parameters['scylla'], sim_percentage=sim_percentage)
 
                 response = dict()
                 status = STATUS_OK
@@ -189,7 +195,7 @@ def objective(params):
                             simulate(settings, rep)
                             if settings['analysis']:
                                 process_stats = process_stats.append(measure_stats(settings,
-                                                                                   bpmn, rep),
+                                                                                   bpmn, rep,resource_table=parameters['resource_table']),
                                                                      ignore_index=True,
                                                                      sort=False)
                                 sim_values.append(gen.mesurement(process_stats, settings, rep))
@@ -210,7 +216,7 @@ def objective(params):
     return response
 def main(argv):
     space = {
-        'file': 'PurchasingExampleEditable1.xes',
+        'file': 'ProductionEditable.xes',
         #'epsilon': hp.uniform('epsilon', 0.0, 1.0),
         'epsilon':1,
         'eta':1,
@@ -219,11 +225,12 @@ def main(argv):
                                              'trace_alignment',
                                              'removal']),
         'repetitions': 2,
-        'simulation': True,
+        'simulation': False,
         'analysis':True,
         'flag':[2],
         'k':[1,2],
-        'sim_percentage':10
+        'sim_percentage':70,
+        'simulator':['bimp','scylla']
     }
     objective(space)
     ## Trials object to track progress

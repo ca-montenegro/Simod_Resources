@@ -4,7 +4,7 @@ from support_modules import support as sup
 
 from collections import OrderedDict
 
-def replay(process_graph, log, source='log', run_num=0):
+def replay(process_graph, log,resource_table, source='log', run_num=0):
     subsec_set = create_subsec_set(process_graph)
     parallel_gt_exec = parallel_execution_list(process_graph)
     not_conformant_traces = list()
@@ -68,7 +68,7 @@ def replay(process_graph, log, source='log', run_num=0):
         sup.print_progress(((index / (len(traces)-1))* 100),'Replaying process traces ')
     #------Filtering records and calculate stats---
     process_stats = list(filter(lambda x: x['task'] != 'Start' and x['task'] != 'End' and x['resource'] != 'AUTO', process_stats))
-    process_stats = calculate_process_metrics(process_stats)
+    process_stats = calculate_process_metrics(process_stats,resource_table)
     [x.update(dict(source=source, run_num=run_num)) for x in process_stats]
     #----------------------------------------------
     sup.print_done_task()
@@ -115,12 +115,13 @@ def find_previous_record(trace_times, task):
             break
     return event
 
-def calculate_process_metrics(process_stats):
+def calculate_process_metrics(process_stats,resource_table):
     for record in process_stats:
+        #costxhour = list(filter(lambda x:x['role']==record['resource'],resource_table))
         duration=(record['end_timestamp']-record['start_timestamp']).total_seconds()
         waiting=(record['start_timestamp']-record['enable_timestamp']).total_seconds()
         multitasking=0
-        #TODO check resourse for multi_tasking
+        #TODO check resource for multi_tasking
         if waiting<0:
             waiting=0
             if record['end_timestamp'] > record['enable_timestamp']:
@@ -128,6 +129,11 @@ def calculate_process_metrics(process_stats):
                 multitasking=(record['enable_timestamp']-record['start_timestamp']).total_seconds()
             else:
                 multitasking = duration
+        #if costxhour!=[]:
+        #    costxhour = costxhour[0]['costxhour']
+        #    record['totalCost'] = ((duration+waiting)/3600)*float(costxhour)
+        #else:
+        #    record['totalCost'] = -1
         record['processing_time'] = duration
         record['waiting_time'] = waiting
         record['multitasking'] = multitasking

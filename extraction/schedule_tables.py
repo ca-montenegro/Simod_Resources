@@ -35,12 +35,13 @@ def analize_schedules(resource_table, log, default=False, dtype=None):
         data = sorted(resource_table, key=lambda x:x['role'])
         for key, group in itertools.groupby(data, key=lambda x:x['role']):
             values = list(group)
-            group_resources = [x['resource'] for x in values]
+            group_resources = [x for x in values]
             resource_pool.append(
-                dict(id=sup.gen_id(), name=key, total_amount=str(len(group_resources)), costxhour="20",
+                #TODO: Assign timetable id per resource
+                dict(id=sup.gen_id(), name=key, total_amount=str(len(group_resources)),instances=group_resources, costxhour=[x['costxhour']for x in group_resources],avg_costxhour=group_resources[0]['avg_costxhour'],
                      timetable_id="QBP_DEFAULT_TIMETABLE"))
         resource_pool[0]['id'] = 'QBP_DEFAULT_RESOURCE'
-        resource_pool.append(dict(id='0', name = 'Role 0', total_amount = '1', costxhour="0",timetable_id="QBP_DEFAULT_TIMETABLE" ))
+        resource_pool.append(dict(id='0', name = 'Role 0', total_amount = '1', costxhour=[],instances=[],avg_costxhour="0",timetable_id="QBP_DEFAULT_TIMETABLE" ))
     else:
         print('test')
     return resource_pool, time_table, resource_table
@@ -65,6 +66,7 @@ def analize_log_schedule(resource_table, log):
 
 def create_timetables(resource_table,default=True, dtype='LV917'):
     time_table = list()
+    #Todo: create timetable in log to assign one per resource
     if default:
         if dtype=='LV917':
             time_table.append(dict(id_t="QBP_DEFAULT_TIMETABLE",default="true",name="Default",

@@ -7,14 +7,18 @@ import numpy as np
 from support_modules import support as sup
 
 
-def get_task_distribution(task_data, graph=False, bins=200):
+def get_task_distribution(task_data,simulator, graph=False, bins=200):
     """Calculate the probability distribution of one task of a log
         parameters:
         task_data: data of time delta for one task
         graph: activate the comparision graphs of the process
     """
-    dist = {'norm':'NORMAL', 'lognorm':'LOGNORMAL', 'gamma':'GAMMA', 'expon':'EXPONENTIAL',
-            'uniform':'UNIFORM', 'triang':'TRIANGULAR', 'fixed':'FIXED'}
+    if(simulator=='scylla'):
+        dist = {'norm':'normalDistribution', 'gamma':'GAMMA', 'expon':'exponentialDistribution',
+                'uniform':'uniformDistribution', 'triang':'triangularDistribution', 'fixed':'constantDistribution'}
+    elif(simulator=='bimp'):
+        dist = {'norm': 'NORMAL', 'gamma': 'GAMMA', 'expon': 'EXPONENTIAL',
+                'uniform': 'UNIFORM', 'triang': 'TRIANGULAR', 'fixed': 'FIXED'}
 
     if not task_data:
         dname = 'fixed'
@@ -26,7 +30,7 @@ def get_task_distribution(task_data, graph=False, bins=200):
             dparams = dict(mean=int(np.min(task_data)),arg1=0, arg2=0)
         else:
             dname = dist_best(task_data, bins)
-            dparams =  dist_params(dname, task_data)
+            dparams =  dist_params(dname, task_data,simulator)
     return dict(dname=dist[dname], dparams=dparams)
 
 # -- Find best distribution --
@@ -38,7 +42,7 @@ def dist_best(series, bins):
     y, x = np.histogram(data, bins=bins, density=True)
     x = (x + np.roll(x, -1))[:-1] / 2.0
     # Distributions to check
-    distributions = [st.norm,st.expon,st.uniform,st.triang,st.lognorm,st.gamma]
+    distributions = [st.norm,st.expon,st.uniform,st.triang]
     # Best holders
     best_distribution = st.norm
     best_sse = np.inf
@@ -67,7 +71,7 @@ def dist_best(series, bins):
     return best_distribution.name
 
 
-def dist_params(dname, task_data):
+def dist_params(dname, task_data,simulator):
     """calculate additional parameters once the probability distribution is found"""
     params = dict()
     if dname=='norm':
@@ -78,7 +82,10 @@ def dist_params(dname, task_data):
         params=dict(mean=sup.ffloat(np.mean(task_data),1), arg1=sup.ffloat(np.var(task_data),1), arg2=0)
     elif dname=='expon':
         #for effects of the XML arg1=0 and arg2=0
-        params=dict(mean=0, arg1=sup.ffloat(np.mean(task_data),1), arg2=0)
+        if(simulator=='scylla'):
+            params=dict(mean=sup.ffloat(np.mean(task_data),1), arg1=0, arg2=0)
+        else:
+            params = dict(mean=0, arg1=sup.ffloat(np.mean(task_data), 1), arg2=0)
     elif dname=='uniform':
         #for effects of the XML the mean is always 3600, min = arg1 and max = arg2
         params=dict(mean=3600, arg1=sup.ffloat(np.min(task_data),1), arg2=sup.ffloat(np.max(task_data),1))

@@ -24,10 +24,17 @@ def mesurement(data, settings, rep, ramp_io_perc = 0.2):
                        overall_process_time = 0,
                        overall_waiting_time = 0,
                        overall_cycle_time = 0,
+                       overall_resource_cost_total = 0,
                        overall_avg_process_time = 0,
                        overall_avg_waiting_time = 0,
-                       overall_avg_cycle_time = 0)
+                       overall_avg_cycle_time = 0,
+                       overall_avg_resource_cost_total = 0)
     for k,v in enumerate(simult_data_KPI):
+        resource_cost_total = np.sum(v['totalCost'])
+        v['totalCostxhour'] = resource_cost_total
+        v['avg_totalcostxhour'] = np.mean(v['totalCost'])
+        overall_kpi['overall_resource_cost_total']+=resource_cost_total
+        v['sum_process_time'] = np.sum(v['processing'])
         avg_processe = (np.mean(v['processing']))
         v['avg_process_time'] = avg_processe
         overall_kpi['overall_process_time'] += avg_processe
@@ -35,13 +42,15 @@ def mesurement(data, settings, rep, ramp_io_perc = 0.2):
         b = np.sum(v['waiting'])
         sumCycleTime = (np.sum([a,b]))
         v['cycle_time'] = sumCycleTime
-        overall_kpi['overall_cycle_time'] = overall_kpi['overall_cycle_time'] + sumCycleTime
+        overall_kpi['overall_cycle_time'] += sumCycleTime
+        v['sum_waiting_time'] = np.sum(v['waiting'])
         avg_waiti = (np.mean(v['waiting']))
         v['avg_waiting_time'] = avg_waiti
         overall_kpi['overall_waiting_time'] = overall_kpi['overall_waiting_time'] + avg_waiti
     overall_kpi['overall_avg_process_time'] = overall_kpi['overall_process_time'] / len(simult_data_KPI)
     overall_kpi['overall_avg_waiting_time'] = overall_kpi['overall_waiting_time']/ len(simult_data_KPI)
     overall_kpi['overall_avg_cycle_time'] = overall_kpi['overall_cycle_time'] / len(simult_data_KPI)
+    overall_kpi['overall_avg_resource_cost_total'] = overall_kpi['overall_resource_cost_total'] / len(simult_data_KPI)
     listOverall_kpi = list()
     listOverall_kpi.append(overall_kpi)
     print_kpi(settings,simult_data_KPI)
@@ -229,7 +238,7 @@ def reformat_events(data, alias, features):
         temp_data = list()
         for case in cases:
             temp_dict = dict(caseid=case, resource=list(), processing=list(),
-                             waiting=list(), avg_process_time=list(),avg_waiting_time=list(),cycle_time=list())
+                             waiting=list(),totalCost=list(),sum_process_time = list(), sum_waiting_time = list(), avg_process_time=list(),avg_waiting_time=list(),cycle_time=list(),totalCostxhour=list(),avg_totalcostxhour=list())
             events = sorted(list(filter(lambda x: x['caseid']==case, data)), key=itemgetter('start_timestamp'))
             for i in range(0, len(events)):
                 temp_dict['resource'].append(events[i]['resource'])
@@ -237,6 +246,7 @@ def reformat_events(data, alias, features):
                 #temp_dict['proc_act_norm'].append(events[i]['proc_act_norm'])
                 temp_dict['waiting'].append(events[i]['waiting_time'])
                 #temp_dict['wait_act_norm'].append(events[i]['wait_act_norm'])
+                temp_dict['totalCost'].append(events[i]['totalCost'])
             temp_dict['start_time'] = events[0]['start_timestamp']
             temp_data.append(temp_dict)
         return sorted(temp_data, key=itemgetter('start_time'))

@@ -76,9 +76,9 @@ def users_definition(tasks_by_user,users,tasks):
                 names.append(name)
             else:
                 name = 'None'
-                names.append(name)
+                #names.append(name)
         taskName = tasks[task['task']]['data']
-        taskResourcesNames.append(dict(idTask = task['task'],task=taskName,resource = names, quantity = task['quantity'] ))
+        taskResourcesNames.append(dict(idTask = task['task'],task=taskName,resource = names, quantity = task['quantity'],lenRole = len(names) ))
     return taskResourcesNames
 
 def build_profile(users,freq_matrix,prof_size):
@@ -137,6 +137,10 @@ def role_definition(sub_graphs,users,taskResourcesNames,data):
         records = sorted(records, key=itemgetter('quantity'), reverse=True)
         for i in range(0,len(records)):
             records[i]['role']='Role '+ str(i + 1)
+            sum_costxhour = 0
+            for mem in records[i]['members']:
+              sum_costxhour += int(list(filter(lambda x:x[1]==mem,data))[0][2])
+            records[i]['avg_costxhour'] = sum_costxhour/len(records[i]['members'])
         resource_table = list()
         for record in records:
             for member in record['members']:
@@ -144,16 +148,26 @@ def role_definition(sub_graphs,users,taskResourcesNames,data):
                 registers = list(filter(lambda x:x[1]==member,data))
                 for register in registers:
                     diff_time+=register[3].total_seconds()
-                resource_table.append(dict(role=record['role'], resource=member,costxhour=list(filter(lambda x:x[1]==member,data))[0][2],dif_timestamp=diff_time))
+                resource_table.append(dict(role=record['role'], resource=member,costxhour=list(filter(lambda x:x[1]==member,data))[0][2],avg_costxhour=record['avg_costxhour'],dif_timestamp=diff_time))
         return records, resource_table
     elif taskResourcesNames!=None:
         for i in range(0,len(taskResourcesNames)):
             taskResourcesNames[i]['role']='Role '+str(i+1)
+            sum_costxhour = 0
+            for mem in taskResourcesNames[i]['resource']:
+                sum_costxhour += int(list(filter(lambda x: x[1] == mem, data))[0][2])
+            taskResourcesNames[i]['avg_costxhour'] = sum_costxhour / len(taskResourcesNames[i]['resource'])
         resource_table = list()
         for taskRes in taskResourcesNames:
+            quantity = 0
             for member in taskRes['resource']:
-                if member!='None':
-                    resource_table.append(dict(role=taskRes['role'],resource=member))
+                if member != 'None':
+                    quantity+=1
+                    diff_time = 0
+                    registers = list(filter(lambda x: x[1] == member, data))
+                    for register in registers:
+                        diff_time += register[3].total_seconds()
+                    resource_table.append(dict(role=taskRes['role'],resource=member,avg_costxhour = taskRes['avg_costxhour'],costxhour=list(filter(lambda x:x[1]==member,data))[0][2],dif_timestamp=diff_time))
         return taskResourcesNames,resource_table
 
 
@@ -205,7 +219,7 @@ def role_discovery(data, drawing, sim_percentage):
     sup.print_done_task()
     return roles
 
-def role_freqAct_discovery(data, sim_percentage,k):
+def role_freqAct_discovery(data,k):
     datos = map(lambda x: x[0], data)
     tasks = list(set(list(datos)))
     try:
@@ -231,7 +245,7 @@ def role_freqAct_discovery(data, sim_percentage,k):
     sup.print_progress(((80 / 100) * 100), 'Analysing resource pool by task frequency ')
     tasks_by_user = get_tasks_by_k_users(freq_matrix,k)
     taskResourcesNames = users_definition(tasks_by_user,users,tasks)
-    roles = role_definition(None,users,taskResourcesNames)
+    roles = role_definition(None,users,taskResourcesNames,data=data)
     sup.print_progress(((100 / 100) * 100), 'Analysing resource pool by task frequency ')
     sup.print_done_task()
     return roles
@@ -271,7 +285,7 @@ def read_resource_pool(log, separator=None, drawing=False, sim_percentage=0.0,k=
         for row in log.data:
             if row['task'] != 'End' and row['user'] != 'AUTO':
                 filtered_list.append([row['task'], row['user'],row['costxhour'],row['dif_timestamp']])
-        return role_freqAct_discovery(filtered_list, sim_percentage,k)
+        return role_freqAct_discovery(filtered_list,k)
     else:
         raw_list = list()
         filtered_list = list()

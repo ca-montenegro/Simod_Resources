@@ -1,0 +1,426 @@
+<?xml version='1.0' encoding='ASCII'?>
+<bsim:definitions xmlns:bsim="http://bsim.hpi.uni-potsdam.de/scylla/simModel" targetNamespace="http://www.hpi.de">
+  <bsim:simulationConfiguration id="qbp_7c606692-9519-4c71-acc0-de60fffcc7df" processRef="proc_979294118" processInstances="225" startDateTime="2017-08-14T08:00:00.000Z" resourceAssignmentOrder="priority,simulationTime">
+    <bsim:task id="node_2f6771f4-bb6a-4ff7-94e0-6dc7fff93336" name="Change Version">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:constantDistribution>
+          <bsim:constantValue>0</bsim:constantValue>
+        </bsim:constantDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="0" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_a7af65f3-9faa-44be-9cb6-fc6a30d7927b" name="Flat Grinding">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:uniformDistribution>
+          <bsim:lower>840.0</bsim:lower>
+          <bsim:upper>4500.0</bsim:upper>
+        </bsim:uniformDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="qbp_da09706a-6d23-4bc5-bb7c-ab80a13980f5" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_9026af35-70a7-4e75-b34f-b497a2b860e0" name="Fix">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:constantDistribution>
+          <bsim:constantValue>0</bsim:constantValue>
+        </bsim:constantDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="0" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_d2da251d-1617-47b3-b532-c4ce1803c0b5" name="Turning &amp; Milling Q.C.">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:triangularDistribution>
+          <bsim:lower>120.0</bsim:lower>
+          <bsim:upper>8280.0</bsim:upper>
+          <bsim:peak>180.0</bsim:peak>
+        </bsim:triangularDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="qbp_43786dd2-6222-47a7-b00d-f38ebb03c8fc" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_db0db9ae-20b9-4931-9210-bee56883b893" name="Round Grinding">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:triangularDistribution>
+          <bsim:lower>60.0</bsim:lower>
+          <bsim:upper>22440.0</bsim:upper>
+          <bsim:peak>6000.0</bsim:peak>
+        </bsim:triangularDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="qbp_bf83fc21-0c98-49d4-be74-4439bdcb9ee9" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_8a5974e0-75dd-457d-a6ab-bc31d6b5e2ca" name="Milling">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:constantDistribution>
+          <bsim:constantValue>0</bsim:constantValue>
+        </bsim:constantDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="0" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_c5b61201-4f3c-4783-95d9-e0bb3717e668" name="Setup">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:constantDistribution>
+          <bsim:constantValue>0</bsim:constantValue>
+        </bsim:constantDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="0" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_5340d025-5d6c-4bc6-9ff7-51565d9654d8" name="Turning Rework">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:constantDistribution>
+          <bsim:constantValue>0</bsim:constantValue>
+        </bsim:constantDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="0" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_cf525fc9-14d4-4047-bf39-0f6e855b92a7" name="Turning Q.C.">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:constantDistribution>
+          <bsim:constantValue>0</bsim:constantValue>
+        </bsim:constantDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="0" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_9516cb5c-f231-4961-8950-713b5fdf8708" name="SETUP     Turning &amp; Milling">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:constantDistribution>
+          <bsim:constantValue>0</bsim:constantValue>
+        </bsim:constantDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="0" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_0cbac7e9-9700-41f4-bf65-793b4346843c" name="Grinding Rework">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:constantDistribution>
+          <bsim:constantValue>0</bsim:constantValue>
+        </bsim:constantDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="0" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_f955193c-bfc2-4354-a96e-8c57e7e2f718" name="Round  Q.C.">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:constantDistribution>
+          <bsim:constantValue>0</bsim:constantValue>
+        </bsim:constantDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="0" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_920afd76-e14e-480e-bd3b-fb4868492b39" name="Turning">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:constantDistribution>
+          <bsim:constantValue>0</bsim:constantValue>
+        </bsim:constantDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="0" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_4ef016a9-0a04-47cf-a8e6-a2dba25fd795" name="Rework Milling">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:constantDistribution>
+          <bsim:constantValue>0</bsim:constantValue>
+        </bsim:constantDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="0" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_b11d663b-d8a3-4bb9-87cc-5664a5b06f34" name="Laser Marking">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:uniformDistribution>
+          <bsim:lower>60.0</bsim:lower>
+          <bsim:upper>4500.0</bsim:upper>
+        </bsim:uniformDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="qbp_da09706a-6d23-4bc5-bb7c-ab80a13980f5" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_fac6913d-16aa-4caa-af55-50f661fb27ea" name="Lapping">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:exponentialDistribution>
+          <bsim:mean>4860.0</bsim:mean>
+        </bsim:exponentialDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="qbp_da09706a-6d23-4bc5-bb7c-ab80a13980f5" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_325b3ce2-f705-42d3-b8a9-b7ba74cc50dd" name="Turning &amp; Milling">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:triangularDistribution>
+          <bsim:lower>480.0</bsim:lower>
+          <bsim:upper>38100.0</bsim:upper>
+          <bsim:peak>6240.0</bsim:peak>
+        </bsim:triangularDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="QBP_DEFAULT_RESOURCE" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_defa64d0-0c61-4d78-9b14-4a91d60d82bf" name="Turn &amp; Mill. &amp; Screw Assem">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:constantDistribution>
+          <bsim:constantValue>0</bsim:constantValue>
+        </bsim:constantDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="0" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_4895ac30-dd87-4182-b010-aa2f8e8dc990" name="Packing">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:constantDistribution>
+          <bsim:constantValue>3600</bsim:constantValue>
+        </bsim:constantDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="qbp_c9c25f7e-9732-4df0-bd43-c39966f83ef9" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_483b6412-24de-4316-bf89-2b5b009ead72" name="Stress Relief">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:constantDistribution>
+          <bsim:constantValue>0</bsim:constantValue>
+        </bsim:constantDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="0" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_8faff57f-0768-4ca7-9ccb-8e683832ba6d" name="Final Inspection">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:constantDistribution>
+          <bsim:constantValue>0</bsim:constantValue>
+        </bsim:constantDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="0" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_b3168a8d-98a7-4cbd-9424-a5212e090caf" name="Nitration Q.C.">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:constantDistribution>
+          <bsim:constantValue>0</bsim:constantValue>
+        </bsim:constantDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="0" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_30d85f58-9f8c-41bb-95cb-d5b290e7161b" name="Final Inspection Q.C.">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:triangularDistribution>
+          <bsim:lower>60.0</bsim:lower>
+          <bsim:upper>22200.0</bsim:upper>
+          <bsim:peak>3600.0</bsim:peak>
+        </bsim:triangularDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="qbp_43786dd2-6222-47a7-b00d-f38ebb03c8fc" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_2e7ea1d8-8578-428d-a941-a46a378d6310" name="Milling Q.C.">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:constantDistribution>
+          <bsim:constantValue>0</bsim:constantValue>
+        </bsim:constantDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="0" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_19002474-4ebe-469c-9f2d-ae7dfa1e4941" name="Start">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:constantDistribution>
+          <bsim:constantValue>0</bsim:constantValue>
+        </bsim:constantDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="0" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:exclusiveGateway id="node_2e3d4146-d606-4e1a-a4f4-b7bf4404c748">
+      <bsim:outgoingSequenceFlow id="node_b1eade02-a4a6-42f9-9ccd-0875ee2fde0f">
+        <bsim:branchingProbability>0.07</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_66eb24ed-6afc-4267-8baa-a192c8cb5b09">
+        <bsim:branchingProbability>0.93</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_f8064f46-1ed9-4e48-894e-edb3d9d94957">
+      <bsim:outgoingSequenceFlow id="node_f9ce1f21-eea1-4d6e-a3c5-9eda8d78d756">
+        <bsim:branchingProbability>0.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_0a5c1e8c-eb2f-4af5-ae7b-f2a78b14ec4d">
+        <bsim:branchingProbability>1.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_42447938-335c-4e60-9a76-dd0d25c0dfcf">
+      <bsim:outgoingSequenceFlow id="node_e827560f-6647-4346-8a0e-73a97bb347e4">
+        <bsim:branchingProbability>1.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_6f29edd7-cbae-4e52-9048-8f2edc98bfad">
+        <bsim:branchingProbability>0.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_1a5eaa41-ec01-4213-819c-870a014c113a">
+      <bsim:outgoingSequenceFlow id="node_5c8be7d7-22c9-43f7-bfb6-04463e6927b6">
+        <bsim:branchingProbability>0.03</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_3ec0835e-9c14-49e9-b64b-b4f33ec431b6">
+        <bsim:branchingProbability>0.97</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_561a4e20-0c8d-4782-a72e-762e87cf936e">
+      <bsim:outgoingSequenceFlow id="node_69cabf49-a993-4a27-a8e0-f68356417729">
+        <bsim:branchingProbability>0.93</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_c34d97de-a55f-4af0-82af-26f14bde9f3b">
+        <bsim:branchingProbability>0.07</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_eab72a3a-df09-4f58-a786-67d5409260ac">
+      <bsim:outgoingSequenceFlow id="node_d42d8e58-dcad-40bf-aea0-f4dedcb2ab05">
+        <bsim:branchingProbability>0.48</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_fde43210-e4d8-419a-8918-3d5d8826b682">
+        <bsim:branchingProbability>0.52</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_753c982a-5736-49d5-945f-da541b3a006d">
+      <bsim:outgoingSequenceFlow id="node_c243c343-aa28-4fcc-b752-b8c9af107533">
+        <bsim:branchingProbability>0.27</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_4f5c8e06-3494-4fd1-ac46-ff0e26c43194">
+        <bsim:branchingProbability>0.73</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_1867ffa5-6c4d-436c-91e5-12104c7bf024">
+      <bsim:outgoingSequenceFlow id="node_3adbf798-6334-4a9d-a015-eaa96f5375f2">
+        <bsim:branchingProbability>0.07</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_d7eb3972-9320-4d7b-8dcb-202ee6dbe83f">
+        <bsim:branchingProbability>0.93</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_ec360a06-86f0-4e45-8cff-125841b97cf7">
+      <bsim:outgoingSequenceFlow id="node_88132a5e-41bf-43fb-aac4-d5df63b332fc">
+        <bsim:branchingProbability>1.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_38e1f646-0506-4805-a35f-abb1f898e719">
+        <bsim:branchingProbability>0.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_52d2e530-caff-4dc0-9aae-9cd8a2dbecad">
+      <bsim:outgoingSequenceFlow id="node_ff22f132-40e9-4e4d-a7d1-5278f4d94b94">
+        <bsim:branchingProbability>0.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_36c9267a-6b54-4bc6-973c-60d58d7bca4a">
+        <bsim:branchingProbability>1.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_63eaf33b-6c9d-454c-a005-81dd6cac9ff0">
+      <bsim:outgoingSequenceFlow id="node_c7911571-03d8-440e-8bab-0f19d4e442ed">
+        <bsim:branchingProbability>1.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_815f868d-002f-4f50-896e-68abbe5af05a">
+        <bsim:branchingProbability>0.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_39fa32c2-8b56-438d-9db3-2efe029737ff">
+      <bsim:outgoingSequenceFlow id="node_63e57cf3-f626-4f2d-adab-0fb66cdc5ccc">
+        <bsim:branchingProbability>1.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_966cf98a-2f62-4614-9bd0-f9e27f456a95">
+        <bsim:branchingProbability>0.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_0d98c6c0-a0b1-4281-8649-19863ecf62bd">
+      <bsim:outgoingSequenceFlow id="node_741d8c6e-6180-4458-b069-4161f5ec26ee">
+        <bsim:branchingProbability>0.06</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_899501c1-1fe0-4760-a0d2-f69e3b15f54c">
+        <bsim:branchingProbability>0.94</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_35a0f6f1-3fb4-4414-8d92-b80e7c1c09eb">
+      <bsim:outgoingSequenceFlow id="node_8ee7460f-bea0-4eba-a7b3-27b8eeb30c66">
+        <bsim:branchingProbability>0.24</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_7652a322-7f5c-4771-a93b-633404bcd0cb">
+        <bsim:branchingProbability>0.76</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_12cb495c-3517-4164-b0cc-3e659d1eb96e">
+      <bsim:outgoingSequenceFlow id="node_6ccd47c9-985e-4b67-9ab7-bd075319a31a">
+        <bsim:branchingProbability>1</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_136fa6a5-d20e-4b5c-a278-929cb8a26728">
+        <bsim:branchingProbability>0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_592b7935-1219-4be0-ba98-7d3390973dab">
+      <bsim:outgoingSequenceFlow id="node_8babe640-2aac-45df-9c6a-1b2eabaee70d">
+        <bsim:branchingProbability>0.6</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_826d2692-eb04-4b68-8c1f-495226ff4ef1">
+        <bsim:branchingProbability>0.4</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_db02b346-cef3-4c6e-9fd9-f1b4ebe523b1">
+      <bsim:outgoingSequenceFlow id="node_c7460c41-17f7-4522-ac7a-5d15722aab1d">
+        <bsim:branchingProbability>0.95</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_088f9fce-d1ae-4b34-bd67-97148692a32d">
+        <bsim:branchingProbability>0.05</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_ede13756-b14a-48d8-8d7f-9ebb13b33fad">
+      <bsim:outgoingSequenceFlow id="node_d42aae5c-452d-40f6-9d80-4a37e942b816">
+        <bsim:branchingProbability>0.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_58d53b36-b6f9-46be-a6d6-65a8b16dcbee">
+        <bsim:branchingProbability>1.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_fdf76e25-4a71-4714-90bf-c43d37d2f3ed">
+      <bsim:outgoingSequenceFlow id="node_d7d27c77-ca79-43f0-acad-fc4801c281c7">
+        <bsim:branchingProbability>0.06</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_e29ae0e8-b5c2-4ab1-acbc-679e4b799da9">
+        <bsim:branchingProbability>0.94</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:startEvent id="node_155f6838-0d71-4d02-8636-daa5382a4a6d">
+      <bsim:arrivalRate timeUnit="SECONDS">
+        <bsim:triangularDistribution>
+          <bsim:lower>780.0</bsim:lower>
+          <bsim:upper>57600.0</bsim:upper>
+          <bsim:peak>780.0</bsim:peak>
+        </bsim:triangularDistribution>
+      </bsim:arrivalRate>
+    </bsim:startEvent>
+  </bsim:simulationConfiguration>
+</bsim:definitions>
