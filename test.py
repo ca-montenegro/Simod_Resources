@@ -216,7 +216,7 @@ def objective(params):
     return response
 def main(argv):
     space = {
-        'file': 'ProductionEditable.xes',
+        'file': 'PurchasingExampleEditable1.xes',
         #'epsilon': hp.uniform('epsilon', 0.0, 1.0),
         'epsilon':1,
         'eta':1,
