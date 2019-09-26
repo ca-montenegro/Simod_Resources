@@ -77,6 +77,7 @@ def verifyArrivalRate(arrival_rate):
 	TRIANGULARDISTRIBUTION = E.triangularDistribution
 	ERLANGDISTRIBUTION = E.erlangDistribution
 	CONSTANTDISTRIBUTION = E.constantDistribution
+	BINOMIALDISTRIBUTION = E.binomialDistribution
 	ORDER = E.order
 	MEAN = E.mean
 	LOWER = E.lower
@@ -84,6 +85,8 @@ def verifyArrivalRate(arrival_rate):
 	PEAK = E.peak
 	STANDARDDEVIATION = E.standardDeviation
 	CONSTANTVALUE = E.constantValue
+	PROBABILITY = E.probability
+	AMOUNT = E.amount
 	type = arrival_rate['dname']
 	if(type=='normalDistribution'):
 		return NORMALDISTRIBUTION(
@@ -114,6 +117,17 @@ def verifyArrivalRate(arrival_rate):
 		return CONSTANTDISTRIBUTION(
 			CONSTANTVALUE(str(arrival_rate['dparams']['mean']))
 		)
+	elif (type == 'binomialDistribution'):
+		return BINOMIALDISTRIBUTION(
+			PROBABILITY(str(arrival_rate['dparams']['mean'])),
+			AMOUNT(str(arrival_rate['dparams']['arg1']))
+		)
+	elif (type == 'binomialDistribution'):
+		return BINOMIALDISTRIBUTION(
+			PROBABILITY(str(arrival_rate['dparams']['mean'])),
+			AMOUNT(str(arrival_rate['dparams']['arg1']))
+		)
+	#TO-do
 
 def verifyDistribution(element_data):
 	E = ElementMaker(namespace="http://bsim.hpi.uni-potsdam.de/scylla/simModel",

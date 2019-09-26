@@ -14,7 +14,7 @@ def get_task_distribution(task_data,simulator, graph=False, bins=200):
         graph: activate the comparision graphs of the process
     """
     if(simulator=='scylla'):
-        dist = {'norm':'normalDistribution', 'gamma':'GAMMA', 'expon':'exponentialDistribution',
+        dist = {'binom':'binomialDistribution','poisson':'poissonDistribution','erlang':'erlangDistribution','norm':'normalDistribution', 'gamma':'GAMMA', 'expon':'exponentialDistribution',
                 'uniform':'uniformDistribution', 'triang':'triangularDistribution', 'fixed':'constantDistribution'}
     elif(simulator=='bimp'):
         dist = {'norm': 'NORMAL', 'gamma': 'GAMMA', 'expon': 'EXPONENTIAL',
@@ -42,7 +42,7 @@ def dist_best(series, bins):
     y, x = np.histogram(data, bins=bins, density=True)
     x = (x + np.roll(x, -1))[:-1] / 2.0
     # Distributions to check
-    distributions = [st.norm,st.expon,st.uniform,st.triang]
+    distributions = [st.binom,st.poisson,st.erlang,st.norm,st.expon,st.uniform,st.triang]
     # Best holders
     best_distribution = st.norm
     best_sse = np.inf
@@ -92,4 +92,7 @@ def dist_params(dname, task_data,simulator):
     elif dname=='triang':
         #for effects of the XML the mode is stored in the mean parameter, min = arg1 and max = arg2
         params=dict(mean=sup.ffloat(st.mode(task_data).mode[0],1), arg1=sup.ffloat(np.min(task_data),1), arg2=sup.ffloat(np.max(task_data),1))
+    elif dname=='binom':
+        #for effects of the XML the mode is stored in the mean parameter, min = arg1 and max = arg2
+        params=dict(mean=sup.ffloat(st.mode(task_data).mode[0],1), arg1=sup.ffloat(np.min(task_data),1), arg2=0)
     return params
