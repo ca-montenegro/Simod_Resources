@@ -42,7 +42,8 @@ def dist_best(series, bins):
     y, x = np.histogram(data, bins=bins, density=True)
     x = (x + np.roll(x, -1))[:-1] / 2.0
     # Distributions to check
-    distributions = [st.binom,st.poisson,st.erlang,st.norm,st.expon,st.uniform,st.triang]
+    #distributions = [st.binom,st.poisson,st.erlang,st.norm,st.expon,st.uniform,st.triang]
+    distributions = [st.binom, st.poisson, st.norm, st.expon, st.uniform, st.triang]
     # Best holders
     best_distribution = st.norm
     best_sse = np.inf
@@ -93,6 +94,12 @@ def dist_params(dname, task_data,simulator):
         #for effects of the XML the mode is stored in the mean parameter, min = arg1 and max = arg2
         params=dict(mean=sup.ffloat(st.mode(task_data).mode[0],1), arg1=sup.ffloat(np.min(task_data),1), arg2=sup.ffloat(np.max(task_data),1))
     elif dname=='binom':
+        #for effects of the XML the mode is stored in the mean parameter, min = arg1 and max = arg2
+        params=dict(mean=sup.ffloat(st.mode(task_data).mode[0],1), arg1=sup.ffloat(np.min(task_data),1), arg2=0)
+    elif dname=='poisson':
+        #for effects of the XML the mode is stored in the mean parameter, min = arg1 and max = arg2
+        params=dict(mean=sup.ffloat(st.mode(task_data).mode[0],1), arg1=0, arg2=0)
+    elif dname=='erlang':
         #for effects of the XML the mode is stored in the mean parameter, min = arg1 and max = arg2
         params=dict(mean=sup.ffloat(st.mode(task_data).mode[0],1), arg1=sup.ffloat(np.min(task_data),1), arg2=0)
     return params

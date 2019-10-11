@@ -7,6 +7,7 @@ import xml.etree.ElementTree as ET
 
 import os
 import re
+from support_modules import support as sup
 
 # print(uuid.uuid4())
 
@@ -35,11 +36,8 @@ def xml_templateConfig(arrival_rate, time_table, resource_pool, elements_data, s
 	INSTANCE = E.instance
 
 	rootid = 'GlobalConf_' + str(uuid.uuid4())
-	randomSeed = 3096
+	randomSeed = str(sup.gen_random_int(1,4000))
 
-	print(resource_pool)
-	print()
-	print(resource_pool[0]['instances'])
 
 	my_doc = GLOBALCONFIGURATION(
 		RESOURCEASSIGNMENTORDER("priority,simulationTime"),
@@ -60,7 +58,7 @@ def xml_templateConfig(arrival_rate, time_table, resource_pool, elements_data, s
 							defaultTimetableId=resource['timetable_id'],
 							defaultTimeUnit='SECONDS',
 											* [INSTANCE(name=instance['resource'], timetableId=resource['timetable_id'],
-														cost=instance['costxhour']) for instance in
+														cost=str(instance['costxhour'])) for instance in
 											   resource['instances']]
 							) for resource in resource_pool
 		]),
@@ -78,6 +76,7 @@ def verifyArrivalRate(arrival_rate):
 	ERLANGDISTRIBUTION = E.erlangDistribution
 	CONSTANTDISTRIBUTION = E.constantDistribution
 	BINOMIALDISTRIBUTION = E.binomialDistribution
+	POISSONDISTRIBUTION = E.poissonDistribution
 	ORDER = E.order
 	MEAN = E.mean
 	LOWER = E.lower
@@ -122,10 +121,9 @@ def verifyArrivalRate(arrival_rate):
 			PROBABILITY(str(arrival_rate['dparams']['mean'])),
 			AMOUNT(str(arrival_rate['dparams']['arg1']))
 		)
-	elif (type == 'binomialDistribution'):
-		return BINOMIALDISTRIBUTION(
-			PROBABILITY(str(arrival_rate['dparams']['mean'])),
-			AMOUNT(str(arrival_rate['dparams']['arg1']))
+	elif (type == 'poissonDistribution'):
+		return POISSONDISTRIBUTION(
+			MEAN(str(arrival_rate['dparams']['mean']))
 		)
 	#TO-do
 
@@ -138,6 +136,8 @@ def verifyDistribution(element_data):
 	TRIANGULARDISTRIBUTION = E.triangularDistribution
 	ERLANGDISTRIBUTION = E.erlangDistribution
 	CONSTANTDISTRIBUTION = E.constantDistribution
+	BINOMIALDISTRIBUTION = E.binomialDistribution
+	POISSONDISTRIBUTION = E.poissonDistribution
 	ORDER = E.order
 	MEAN = E.mean
 	LOWER = E.lower
@@ -145,6 +145,8 @@ def verifyDistribution(element_data):
 	PEAK = E.peak
 	STANDARDDEVIATION = E.standardDeviation
 	CONSTANTVALUE = E.constantValue
+	PROBABILITY = E.probability
+	AMOUNT = E.amount
 	type = element_data['type']
 	if (type == 'normalDistribution'):
 		return NORMALDISTRIBUTION(
@@ -174,6 +176,15 @@ def verifyDistribution(element_data):
 	elif (type == 'constantDistribution'):
 		return CONSTANTDISTRIBUTION(
 			CONSTANTVALUE(str(element_data['mean']))
+		)
+	elif (type == 'binomialDistribution'):
+		return BINOMIALDISTRIBUTION(
+			PROBABILITY(str(element_data['dparams']['mean'])),
+			AMOUNT(str(element_data['dparams']['arg1']))
+		)
+	elif (type == 'poissonDistribution'):
+		return POISSONDISTRIBUTION(
+			MEAN(str(element_data['dparams']['mean']))
 		)
 
 def outgoingFlow(arr):

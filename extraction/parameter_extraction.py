@@ -11,7 +11,7 @@ import networkx as nx
 import itertools
 
 # -- Extract parameters --
-def extract_parameters(log, bpmn, process_graph,flag,k,sim_percentage,simulator):
+def extract_parameters(log, bpmn, process_graph,flag,k,sim_percentage,simulator,quantity_by_cost,reverse_cost):
     if bpmn != None and log != None:
         bpmnId = bpmn.getProcessId()
         startEventId = bpmn.getStartEventId()
@@ -19,9 +19,9 @@ def extract_parameters(log, bpmn, process_graph,flag,k,sim_percentage,simulator)
         #-------------------------------------------------------------------
         # Analysing resource pool LV917 or 247
         if(flag==1):
-            roles, resource_table = rl.read_resource_pool(log,sim_percentage=0.0,k=k)
+            roles, resource_table = rl.read_resource_pool(log,sim_percentage=0.0,k=k,quantity_by_cost=quantity_by_cost,reverse_cost=reverse_cost)
         elif(flag==2):
-            roles, resource_table = rl.read_resource_pool(log, drawing=False, sim_percentage=sim_percentage)
+            roles, resource_table = rl.read_resource_pool(log, drawing=False, sim_percentage=sim_percentage,quantity_by_cost=quantity_by_cost,reverse_cost=reverse_cost)
         #TODO: Create array of possible time tables based on the log and return so it can be print in the global config file for scylla
         resource_pool, time_table, resource_table = sch.analize_schedules(resource_table, log, True, 'LV917')
         #-------------------------------------------------------------------
@@ -31,19 +31,20 @@ def extract_parameters(log, bpmn, process_graph,flag,k,sim_percentage,simulator)
         # Adding role to process stats
         for stat in process_stats:
             roleArray = list(filter(lambda x: x['resource']==stat['resource'],resource_table))
+            print(roleArray)
             if(roleArray!=[]):
                 role = roleArray[0]['role']
             stat['role'] = role
-            stat['diff_time_res'] = (stat['end_timestamp']-stat['start_timestamp']).total_seconds()
+            #stat['diff_time_res'] = (stat['end_timestamp']-stat['start_timestamp']).total_seconds()
 
 
-        for resource in resource_table:
-            total_diff_time = 0
-            statArray = list(filter(lambda x: x['resource']==resource['resource'],process_stats))
-            if(statArray!=[]):
-                for stat in statArray:
-                    total_diff_time+=stat['diff_time_res']
-            resource['diff_time_res'] = total_diff_time
+        # for resource in resource_table:
+        #     total_diff_time = 0
+        #     statArray = list(filter(lambda x: x['resource']==resource['resource'],process_stats))
+        #     if(statArray!=[]):
+        #         for stat in statArray:
+        #             total_diff_time+=stat['diff_time_res']
+        #     resource['diff_time_res'] = total_diff_time
 
         # for key, group in itertools.groupby(resource_table, key=lambda x: x['role']):
         #     weight_sum_cost_hour = 0

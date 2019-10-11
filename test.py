@@ -24,6 +24,7 @@ from support_modules.readers import bpmn_reader as br
 from support_modules.readers import process_structure as gph
 from support_modules.writers import xml_writer as xml
 from support_modules.writers import xml_writer_scylla as xml_scylla
+from support_modules.writers import assets_writer as assets_writer
 from support_modules.analyzers import generalization as gen
 from support_modules.log_repairing import conformance_checking as chk
 
@@ -69,14 +70,17 @@ def simulate(settings, rep):
     """Executes SCYLLA Simulations.
     Args:
         settings (dict): Path to jar and file names
-        java -jar scylla_v{}.jar folder globalconfigfile.xml bpmnfile.bpmn simulationfile.xml TODO:outputfolder + rep
+        java -jar scylla_V{}.jar --config=<your config file> --bpmn=<your first bpmn file> --sim=<your first sim file> --output=<your output path + rep> --enable-bps-logging --desmoj-logging
     """
     print("-- Executing SCYLLA Simulations --")
     args = ['java', '-jar', settings['scylla_path'],
-            settings['output'],
-            settings['file'].split('.')[0]+'ScyllaGlobalConfig.xml',
-            settings['file'].split('.')[0]+'.bpmn',
-            settings['file'].split('.')[0]+'ScyllaSimuConfig.xml']
+            "--config="+os.path.join(settings['output'],settings['file'].split('.')[0]+'ScyllaGlobalConfig.xml'),
+            "--bpmn="+os.path.join(settings['output'],settings['file'].split('.')[0]+'.bpmn'),
+            "--sim="+os.path.join(settings['output'],settings['file'].split('.')[0]+'ScyllaSimuConfig.xml'),
+            "--output="+os.path.join(settings['output'],"scyllaSim_rep_"+str(rep),""),
+            "--enable-bps-logging",
+            "--desmoj-logging"]
+    #print(args)
     subprocess.call(args)
 
 def measure_stats(settings, bpmn, rep,resource_table):
@@ -122,45 +126,65 @@ def objective(params):
                 # chk.evaluate_alignment(process_graph, log, settings)
 
                 print("-- Mining Simulation Parameters --")
-                parameters, process_stats = par.extract_parameters(log, bpmn, process_graph, flag=f, k=k,
-                                                                   sim_percentage=0.0)
-                xml.print_parameters(os.path.join(settings['output'],
-                                                  settings['file'].split('.')[0] + '.bpmn'),
-                                     os.path.join(settings['output'],
-                                                  settings['file'].split('.')[0] + '.bpmn'),
-                                     parameters,sim_percentage=0)
+                parameters, process_stats = par.extract_parameters(log, bpmn, process_graph,
+                                                                   flag=f, k=k, simulator=params['simulator'],
+                                                                   sim_percentage=0,
+                                                                   quantity_by_cost=params['quantity_by_cost'],
+                                                                   reverse_cost=params['reverse'])
+                # xml.print_parameters(os.path.join(settings['output'],
+                #                                   settings['file'].split('.')[0] + '.bpmn'),
+                #                      os.path.join(settings['output'],
+                #                                   settings['file'].split('.')[0] + '.bpmn'),
+                #                      parameters,sim_percentage=0)
+                xml_scylla.print_parameters(os.path.join(settings['output'],
+                                                         settings['file'].split('.')[0] + '.bpmn'),
+                                            os.path.join(settings['output'],
+                                                         settings['file'].split('.')[0] + 'Scylla.bpmn'),
+                                            parameters['scylla'], sim_percentage=0.0)
 
                 response = dict()
                 status = STATUS_OK
                 sim_values = list()
                 if settings['simulation']:
-                    if settings['analysis']:
-                        process_stats = pd.DataFrame.from_records(process_stats)
+                    # if settings['analysis']:
+                    # process_stats = pd.DataFrame.from_records(process_stats)
                     for rep in range(settings['repetitions']):
                         print("Experiment #" + str(rep + 1))
                         try:
-                            simulate(settings, rep)
+                            simulate(settings, rep + 1)
                             if settings['analysis']:
-                                process_stats = process_stats.append(measure_stats(settings,
-                                                                                   bpmn, rep,resource_table=parameters['resource_table']),
-                                                                     ignore_index=True,
-                                                                     sort=False)
-                                sim_values.append(gen.mesurement(process_stats, settings, rep))
+                                file_name = settings['file'].split(".")[0]
+                                file_global_config_name = file_name + "ScyllaGlobalConfig_resourceutilization.xml"
+                                scylla_output_path = os.path.join(settings['output'], "scyllaSim_rep_" + str(rep + 1),
+                                                                  file_global_config_name)
+                                new_path = os.path.join(settings['output'], "ResourceUtilizationResults")
+                                if not os.path.exists(new_path):
+                                    os.mkdir(new_path)
+                                new_path = os.path.join(new_path, file_name + "_rep" + str(rep + 1))
+                                assets_writer.processMetadata(scylla_output_path, new_path)
+                                assets_writer.readResourcesUtilization(scylla_output_path, new_path)
+                                assets_writer.instancesData(scylla_output_path, new_path)
+
+                                # process_stats = process_stats.append(measure_stats(settings,
+                                #                                                    bpmn, rep,resource_table=parameters['resource_table']),
+                                #                                      ignore_index=True,
+                                #                                      sort=False)
+                                # sim_values.append(gen.mesurement(process_stats, settings, rep))
                         except Exception as e:
                             print('Failed ' + str(e))
                             status = STATUS_FAIL
                             break
 
-                if status == STATUS_OK:
-                    loss = (1 - np.mean([x['act_norm'] for x in sim_values]))
-                    if loss < 0:
-                        response = {'loss': loss, 'params': params, 'status': STATUS_FAIL}
-                    else:
-                        response = {'loss': loss, 'params': params, 'status': status}
-                else:
-                    response = {'params': params, 'status': status}
-                print(response)
-        else:
+                            #             if status == STATUS_OK:
+                            #                 loss = (1 - np.mean([x['act_norm'] for x in sim_values]))
+                            #                 if loss < 0:
+                            #                     response = {'loss': loss, 'params': params, 'status': STATUS_FAIL}
+                            #                 else:
+                            #                     response = {'loss': loss, 'params': params, 'status': status}
+                            #             else:
+                            #                 response = {'params': params, 'status': status}
+                            #             print(response)
+        elif f==2:
             for sim_percentageRaw in range(params['sim_percentage'],110,10):
                 sim_percentage = sim_percentageRaw/100
                 print('sim_percentage ' + str(sim_percentage))
@@ -184,13 +208,14 @@ def objective(params):
                 # chk.evaluate_alignment(process_graph, log, settings)
 
                 print("-- Mining Simulation Parameters --")
-                parameters, process_stats = par.extract_parameters(log, bpmn, process_graph, flag=f, k=0,simulator=params['simulator'],
-                                                                   sim_percentage=sim_percentage)
-                xml.print_parameters(os.path.join(settings['output'],
-                                                  settings['file'].split('.')[0] + '.bpmn'),
-                                     os.path.join(settings['output'],
-                                                  settings['file'].split('.')[0] + 'Bimp.bpmn'),
-                                     parameters['bimp'],sim_percentage=sim_percentage)
+                parameters, process_stats = par.extract_parameters(log, bpmn, process_graph,
+                                                                   flag=f,k=0, simulator=params['simulator'],
+                                                                   sim_percentage=sim_percentage,quantity_by_cost=params['quantity_by_cost'],reverse_cost=params['reverse'])
+                #xml.print_parameters(os.path.join(settings['output'],
+                #                                  settings['file'].split('.')[0] + '.bpmn'),
+                #                     os.path.join(settings['output'],
+                #                                  settings['file'].split('.')[0] + 'Bimp.bpmn'),
+                #                     parameters['bimp'],sim_percentage=sim_percentage)
                 xml_scylla.print_parameters(os.path.join(settings['output'],
                                                   settings['file'].split('.')[0] + '.bpmn'),
                                      os.path.join(settings['output'],
@@ -201,33 +226,44 @@ def objective(params):
                 status = STATUS_OK
                 sim_values = list()
                 if settings['simulation']:
-                    if settings['analysis']:
-                        process_stats = pd.DataFrame.from_records(process_stats)
+                    #if settings['analysis']:
+                        #process_stats = pd.DataFrame.from_records(process_stats)
                     for rep in range(settings['repetitions']):
                         print("Experiment #" + str(rep + 1))
                         try:
-                            simulate(settings, rep)
+                            simulate(settings, rep+1)
                             if settings['analysis']:
-                                process_stats = process_stats.append(measure_stats(settings,
-                                                                                   bpmn, rep,resource_table=parameters['resource_table']),
-                                                                     ignore_index=True,
-                                                                     sort=False)
-                                sim_values.append(gen.mesurement(process_stats, settings, rep))
+                                file_name = settings['file'].split(".")[0]
+                                file_global_config_name = file_name+"ScyllaGlobalConfig_resourceutilization.xml"
+                                scylla_output_path = os.path.join(settings['output'],"scyllaSim_rep_"+str(rep+1),file_global_config_name)
+                                new_path = os.path.join(settings['output'],"ResourceUtilizationResults")
+                                if not os.path.exists(new_path):
+                                    os.mkdir(new_path)
+                                new_path = os.path.join(new_path,file_name+"_rep"+str(rep+1))
+                                assets_writer.processMetadata(scylla_output_path,new_path)
+                                assets_writer.readResourcesUtilization(scylla_output_path,new_path)
+                                assets_writer.instancesData(scylla_output_path,new_path)
+
+                                # process_stats = process_stats.append(measure_stats(settings,
+                                #                                                    bpmn, rep,resource_table=parameters['resource_table']),
+                                #                                      ignore_index=True,
+                                #                                      sort=False)
+                                # sim_values.append(gen.mesurement(process_stats, settings, rep))
                         except Exception as e:
                             print('Failed ' + str(e))
                             status = STATUS_FAIL
                             break
 
-                if status == STATUS_OK:
-                    loss = (1 - np.mean([x['act_norm'] for x in sim_values]))
-                    if loss < 0:
-                        response = {'loss': loss, 'params': params, 'status': STATUS_FAIL}
-                    else:
-                        response = {'loss': loss, 'params': params, 'status': status}
-                else:
-                    response = {'params': params, 'status': status}
-                print(response)
-    return response
+    #             if status == STATUS_OK:
+    #                 loss = (1 - np.mean([x['act_norm'] for x in sim_values]))
+    #                 if loss < 0:
+    #                     response = {'loss': loss, 'params': params, 'status': STATUS_FAIL}
+    #                 else:
+    #                     response = {'loss': loss, 'params': params, 'status': status}
+    #             else:
+    #                 response = {'params': params, 'status': status}
+    #             print(response)
+    # return response
 def main(argv):
     space = {
         'file': 'PurchasingExampleEditable1.xes',
@@ -240,11 +276,14 @@ def main(argv):
                                              'removal']),
         'repetitions': 1,
         'simulation': True,
-        'analysis':False,
-        'flag':[2],
-        'k':[1,2],
+        'analysis':True,
+        'flag':[1],
+        'k':[14,16],
         'sim_percentage':70,
-        'simulator':['bimp','scylla']
+        'quantity_by_cost':3,
+        #reverse = sort the role array in ascending or descending order. Reverse = True => Descending. Reverse = False => Ascending
+        'reverse':True,
+        'simulator':['scylla']
     }
     objective(space)
     ## Trials object to track progress

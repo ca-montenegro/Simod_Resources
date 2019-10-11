@@ -1,0 +1,261 @@
+<?xml version='1.0' encoding='ASCII'?>
+<bsim:definitions xmlns:bsim="http://bsim.hpi.uni-potsdam.de/scylla/simModel" targetNamespace="http://www.hpi.de">
+  <bsim:simulationConfiguration id="qbp_0477217e-0399-4bec-a6e4-06f45d0753b3" processRef="proc_146611050" processInstances="225" startDateTime="2017-08-14T08:00:00.000Z" resourceAssignmentOrder="priority,simulationTime">
+    <bsim:task id="node_49b28fd1-fe23-4ad5-a632-cc30f93f4b7c" name="Send Invoice">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:constantDistribution>
+          <bsim:constantValue>0</bsim:constantValue>
+        </bsim:constantDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_3" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_a44e81c9-d390-467b-a894-c2a9b39f4b7a" name="Settle Dispute With Supplier">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:uniformDistribution>
+          <bsim:lower>780.0</bsim:lower>
+          <bsim:upper>2040.0</bsim:upper>
+        </bsim:uniformDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_8" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_465070d1-cb77-49ad-9f4f-b5981f12e6bc" name="Deliver Goods Services">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:uniformDistribution>
+          <bsim:lower>12720.0</bsim:lower>
+          <bsim:upper>176040.0</bsim:upper>
+        </bsim:uniformDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_3" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_c6c09ae2-a1bd-4d0f-a935-53d8cfdc68b7" name="Create Purchase Requisition">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:uniformDistribution>
+          <bsim:lower>300.0</bsim:lower>
+          <bsim:upper>3420.0</bsim:upper>
+        </bsim:uniformDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_8" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_22f11a78-bf31-4688-accb-42f73f29331a" name="Send Request for Quotation to Supplier">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:normalDistribution>
+          <bsim:mean>1419.0</bsim:mean>
+          <bsim:standardDeviation>657.5</bsim:standardDeviation>
+        </bsim:normalDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_16" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_2cd2f462-17bb-49cb-a8cf-1a1007c38d03" name="Analyze Purchase Requisition">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:exponentialDistribution>
+          <bsim:mean>397.0</bsim:mean>
+        </bsim:exponentialDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_12" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_ed152e3d-2240-412d-a7a8-28df025c6602" name="Approve Purchase Order for payment">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:constantDistribution>
+          <bsim:constantValue>60</bsim:constantValue>
+        </bsim:constantDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_16" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_93c5ae0c-8b9d-43dd-80dd-cd5b4c0ab3e4" name="Create Purchase Order">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:uniformDistribution>
+          <bsim:lower>360.0</bsim:lower>
+          <bsim:upper>780.0</bsim:upper>
+        </bsim:uniformDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_16" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_9fc9fe75-9c4c-4ceb-bd91-089f2eccaa3a" name="Release Purchase Order">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:constantDistribution>
+          <bsim:constantValue>60</bsim:constantValue>
+        </bsim:constantDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_3" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_cb1bc001-699a-47ff-95b2-1b5352b2b8e2" name="Choose best option">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:constantDistribution>
+          <bsim:constantValue>0</bsim:constantValue>
+        </bsim:constantDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_16" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_700db3fe-0715-4091-96e3-b5c720b1e7ab" name="Amend Purchase Requisition">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:uniformDistribution>
+          <bsim:lower>1380.0</bsim:lower>
+          <bsim:upper>1920.0</bsim:upper>
+        </bsim:uniformDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_14" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_54905d8b-b5d2-45a4-8047-959fd9b6950f" name="Pay Invoice">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:uniformDistribution>
+          <bsim:lower>240.0</bsim:lower>
+          <bsim:upper>900.0</bsim:upper>
+        </bsim:uniformDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_8" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_3e6e88be-9a56-4718-8534-743bf70a2ff9" name="Authorize Supplier's Invoice payment">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:constantDistribution>
+          <bsim:constantValue>0</bsim:constantValue>
+        </bsim:constantDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_8" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_f2df641c-425c-44cc-92a9-6e1163d977a3" name="Settle Conditions With Supplier">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:uniformDistribution>
+          <bsim:lower>14220.0</bsim:lower>
+          <bsim:upper>52680.0</bsim:upper>
+        </bsim:uniformDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_16" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_41e8f8e1-e83f-4903-a6a7-01c299608cf3" name="Analyze Request for Quotation">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:normalDistribution>
+          <bsim:mean>1409.0</bsim:mean>
+          <bsim:standardDeviation>501.7</bsim:standardDeviation>
+        </bsim:normalDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_16" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_c1cec18a-92b5-40b2-b198-01b2dae28cd1" name="Amend Request for Quotation">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:normalDistribution>
+          <bsim:mean>650.0</bsim:mean>
+          <bsim:standardDeviation>244.3</bsim:standardDeviation>
+        </bsim:normalDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_16" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_7ae3ee35-1f7e-4334-8f0e-07b85ceb44d0" name="Release Supplier's Invoice">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:uniformDistribution>
+          <bsim:lower>120.0</bsim:lower>
+          <bsim:upper>420.0</bsim:upper>
+        </bsim:uniformDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_8" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_5aeafcab-06f4-4548-9ca3-64ec601c426b" name="Analyze Quotation Comparison Map">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:uniformDistribution>
+          <bsim:lower>360.0</bsim:lower>
+          <bsim:upper>2040.0</bsim:upper>
+        </bsim:uniformDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_16" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_83b68c3f-c991-4032-a719-a057d6a16f7e" name="Create Quotation comparison Map">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:uniformDistribution>
+          <bsim:lower>2280.0</bsim:lower>
+          <bsim:upper>21840.0</bsim:upper>
+        </bsim:uniformDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_16" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_d558ae2d-2518-414e-a432-13ac5e379e3a" name="Create Request for Quotation">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:uniformDistribution>
+          <bsim:lower>60.0</bsim:lower>
+          <bsim:upper>180.0</bsim:upper>
+        </bsim:uniformDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_12" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_39b577c0-101f-4167-bd59-7e257fd8fb97" name="Confirm Purchase Order">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:uniformDistribution>
+          <bsim:lower>240.0</bsim:lower>
+          <bsim:upper>2100.0</bsim:upper>
+        </bsim:uniformDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_3" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:exclusiveGateway id="node_25607573-26ef-44d1-9242-f90290f42eba">
+      <bsim:outgoingSequenceFlow id="node_1d2e1e5c-09c9-4ea4-8ce7-12d6e5afa72e">
+        <bsim:branchingProbability>0.18</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_04eb7f34-6c55-48db-8317-dab4b586a791">
+        <bsim:branchingProbability>0.82</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_9dbd72c4-883f-47eb-b4a4-bd3b513ecc10">
+      <bsim:outgoingSequenceFlow id="node_f3b17867-c2fa-48b3-9cbe-138efea521a3">
+        <bsim:branchingProbability>0.97</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_5bb60d93-9678-45f1-b325-596a19730c47">
+        <bsim:branchingProbability>0.03</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_5f4119dc-06ac-467f-8068-3f03e3700e10">
+      <bsim:outgoingSequenceFlow id="node_04b3bb36-ac71-4d58-b52e-54bbb3540a7c">
+        <bsim:branchingProbability>0.59</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_c93874d7-b991-4210-a9d4-df5c065eaf5c">
+        <bsim:branchingProbability>0.41</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:startEvent id="node_30f9d942-7b5a-4f49-9a05-4819b61194b6">
+      <bsim:arrivalRate timeUnit="SECONDS">
+        <bsim:exponentialDistribution>
+          <bsim:mean>18939.8</bsim:mean>
+        </bsim:exponentialDistribution>
+      </bsim:arrivalRate>
+    </bsim:startEvent>
+  </bsim:simulationConfiguration>
+</bsim:definitions>

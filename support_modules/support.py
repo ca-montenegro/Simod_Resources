@@ -7,7 +7,7 @@ import csv
 import uuid
 import json
 import platform as pl
-
+import random
 
 def folder_id():
     return datetime.datetime.today().strftime('%Y%m%d_%H%M%S%f')
@@ -77,7 +77,13 @@ def create_csv_file(index, output_file, mode='w'):
 
 def create_csv_file_header(index, output_file, mode='w'):
     with open(output_file, mode, newline='') as f:
-        fieldnames = index[0].keys()
+        leng = 0
+        greater = 0
+        for i in range(len(index)):
+            if(leng<len(index[i].keys())):
+                leng = len(index[i].keys())
+                greater = i
+        fieldnames = index[greater].keys()
         w = csv.DictWriter(f, fieldnames)
         w.writeheader()
         for element in index:
@@ -116,3 +122,6 @@ def copy(source, destiny):
         os.system('copy "' + source + '" "' + destiny + '"')
     else:
         os.system('cp "' + source + '" "' + destiny + '"')
+
+def gen_random_int(low,max):
+    return random.randint(low,max)
