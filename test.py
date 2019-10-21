@@ -130,7 +130,7 @@ def objective(params):
                                                                    flag=f, k=k, simulator=params['simulator'],
                                                                    sim_percentage=0,
                                                                    quantity_by_cost=params['quantity_by_cost'],
-                                                                   reverse_cost=params['reverse'])
+                                                                   reverse_cost=params['reverse'],happy_path=params['happy_path'])
                 # xml.print_parameters(os.path.join(settings['output'],
                 #                                   settings['file'].split('.')[0] + '.bpmn'),
                 #                      os.path.join(settings['output'],
@@ -210,7 +210,9 @@ def objective(params):
                 print("-- Mining Simulation Parameters --")
                 parameters, process_stats = par.extract_parameters(log, bpmn, process_graph,
                                                                    flag=f,k=0, simulator=params['simulator'],
-                                                                   sim_percentage=sim_percentage,quantity_by_cost=params['quantity_by_cost'],reverse_cost=params['reverse'])
+                                                                   sim_percentage=sim_percentage,
+                                                                   quantity_by_cost=params['quantity_by_cost'],
+                                                                   reverse_cost=params['reverse'],happy_path=params['happy_path'])
                 #xml.print_parameters(os.path.join(settings['output'],
                 #                                  settings['file'].split('.')[0] + '.bpmn'),
                 #                     os.path.join(settings['output'],
@@ -280,9 +282,10 @@ def main(argv):
         'flag':[1],
         'k':[14,16],
         'sim_percentage':70,
-        'quantity_by_cost':3,
+        'quantity_by_cost':0,
         #reverse = sort the role array in ascending or descending order. Reverse = True => Descending. Reverse = False => Ascending
         'reverse':True,
+        'happy_path':True,
         'simulator':['scylla']
     }
     objective(space)

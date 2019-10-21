@@ -11,7 +11,7 @@ import networkx as nx
 import itertools
 
 # -- Extract parameters --
-def extract_parameters(log, bpmn, process_graph,flag,k,sim_percentage,simulator,quantity_by_cost,reverse_cost):
+def extract_parameters(log, bpmn, process_graph,flag,k,sim_percentage,simulator,quantity_by_cost,reverse_cost, happy_path=False):
     if bpmn != None and log != None:
         bpmnId = bpmn.getProcessId()
         startEventId = bpmn.getStartEventId()
@@ -19,9 +19,9 @@ def extract_parameters(log, bpmn, process_graph,flag,k,sim_percentage,simulator,
         #-------------------------------------------------------------------
         # Analysing resource pool LV917 or 247
         if(flag==1):
-            roles, resource_table = rl.read_resource_pool(log,sim_percentage=0.0,k=k,quantity_by_cost=quantity_by_cost,reverse_cost=reverse_cost)
+            roles, resource_table = rl.read_resource_pool(log,sim_percentage=0.0,k=k,quantity_by_cost=quantity_by_cost,reverse_cost=reverse_cost,happy_path=False)
         elif(flag==2):
-            roles, resource_table = rl.read_resource_pool(log, drawing=False, sim_percentage=sim_percentage,quantity_by_cost=quantity_by_cost,reverse_cost=reverse_cost)
+            roles, resource_table = rl.read_resource_pool(log, drawing=False, sim_percentage=sim_percentage,quantity_by_cost=quantity_by_cost,reverse_cost=reverse_cost,happy_path=False)
         #TODO: Create array of possible time tables based on the log and return so it can be print in the global config file for scylla
         resource_pool, time_table, resource_table = sch.analize_schedules(resource_table, log, True, 'LV917')
         #-------------------------------------------------------------------
@@ -31,11 +31,45 @@ def extract_parameters(log, bpmn, process_graph,flag,k,sim_percentage,simulator,
         # Adding role to process stats
         for stat in process_stats:
             roleArray = list(filter(lambda x: x['resource']==stat['resource'],resource_table))
-            print(roleArray)
+            #print(roleArray)
             if(roleArray!=[]):
                 role = roleArray[0]['role']
             stat['role'] = role
             #stat['diff_time_res'] = (stat['end_timestamp']-stat['start_timestamp']).total_seconds()
+        if happy_path:
+            resources_list_happy = list()
+            for trace in conformed_traces:
+                if len(trace)==len(log.happy_path):
+                    for i,j in zip(trace, log.happy_path):
+                        if(i['task']!=j['task']):
+                            resources_list_happy = list()
+                            break
+                        resources_list_happy.append(dict(caseid = i['caseid'],task=i['task'],user=i['user'],costxhour=i['costxhour'],dif_timestamp=i['dif_timestamp']))
+            # Analysing resource pool LV917 or 247
+            if (flag == 1):
+                roles, resource_table = rl.read_resource_pool(resources_list_happy, sim_percentage=0.0, k=k,
+                                                              quantity_by_cost=quantity_by_cost,
+                                                              reverse_cost=reverse_cost,happy_path=happy_path)
+            elif (flag == 2):
+                roles, resource_table = rl.read_resource_pool(resources_list_happy, drawing=False,
+                                                              sim_percentage=sim_percentage,
+                                                              quantity_by_cost=quantity_by_cost,
+                                                              reverse_cost=reverse_cost,happy_path=happy_path)
+            # TODO: Create array of possible time tables based on the log and return so it can be print in the global config file for scylla
+            resource_pool, time_table, resource_table = sch.analize_schedules(resource_table, log, True,
+                                                                              'LV917')
+            # -------------------------------------------------------------------
+            # Process replaying
+            conformed_traces, not_conformed_traces, process_stats = rpl.replay(process_graph, log,
+                                                                               resource_table=resource_table)
+            # -------------------------------------------------------------------
+            # Adding role to process stats
+            for stat in process_stats:
+                roleArray = list(filter(lambda x: x['resource'] == stat['resource'], resource_table))
+                # print(roleArray)
+                if (roleArray != []):
+                    role = roleArray[0]['role']
+                stat['role'] = role
 
 
         # for resource in resource_table:

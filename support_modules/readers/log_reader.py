@@ -19,7 +19,7 @@ class LogReader(object):
     def __init__(self, input, timeformat, ns_include=True, one_timestamp=False):
         """constructor"""
         self.input = input
-        self.data, self.raw_data = self.load_data_from_file(timeformat, ns_include, one_timestamp)
+        self.data, self.raw_data, self.happy_path = self.load_data_from_file(timeformat, ns_include, one_timestamp)
 
 
     # Support Method
@@ -60,12 +60,12 @@ class LogReader(object):
         temp_data = list()
         filename, file_extension = self.define_ftype()
         if file_extension == '.xes':
-            temp_data, raw_data = self.get_xes_events_data(filename,timeformat, ns_include, one_timestamp)
+            temp_data, raw_data, happy_path = self.get_xes_events_data(filename,timeformat, ns_include, one_timestamp)
         elif file_extension == '.csv':
             temp_data, raw_data = self.get_csv_events_data(timeformat)
         elif file_extension == '.mxml':
             temp_data, raw_data = self.get_mxml_events_data(filename,timeformat)
-        return temp_data, raw_data
+        return temp_data, raw_data, happy_path
 
     def get_xes_events_data(self, filename,timeformat, ns_include, one_timestamp):
         """reads and parse all the events information from a xes file"""
@@ -74,10 +74,18 @@ class LogReader(object):
         root = tree.getroot()
         if ns_include:
             ns = {'xes': root.tag.split('}')[0].strip('{')}
-            tags = dict(trace='xes:trace',string='xes:string',event='xes:event',date='xes:date',resourcesCost='xes:resourcesCost',resources='xes:resource')
+            tags = dict(trace='xes:trace',string='xes:string',event='xes:event',date='xes:date',resourcesCost='xes:resourcesCost',resources='xes:resource',happyPath='xes:happyPath',activity = 'xes:activity')
         else:
             ns = {'xes':''}
-            tags = dict(trace='trace',string='string',event='event',date='date',resourcesCost='resourcesCost',resources='xes:resource')
+            tags = dict(trace='trace',string='string',event='event',date='date',resourcesCost='resourcesCost',resources='resource',happyPath='happyPath',activity = 'activity')
+
+        happy_path = list()
+        happyPath = root.findall(tags['happyPath'],ns)
+        for path in happyPath:
+            activities = path.findall(tags['activity'],ns)
+            for activity in activities:
+                activity_name = activity.attrib['value']
+                happy_path.append(dict(task=activity_name))
         resourcesCosts = list()
         resourcesCost = root.findall(tags['resourcesCost'],ns)
         for resource in resourcesCost:
@@ -128,7 +136,7 @@ class LogReader(object):
         raw_data = temp_data
         temp_data = self.reorder_xes(temp_data, one_timestamp)
         sup.print_done_task()
-        return temp_data, raw_data
+        return temp_data, raw_data, happy_path
 
     def reorder_xes(self, temp_data, one_timestamp):
         """this method joints the duplicated events on the .xes log"""

@@ -36,7 +36,8 @@ def xml_templateConfig(arrival_rate, time_table, resource_pool, elements_data, s
 	INSTANCE = E.instance
 
 	rootid = 'GlobalConf_' + str(uuid.uuid4())
-	randomSeed = str(sup.gen_random_int(1,4000))
+	#randomSeed = str(sup.gen_random_int(1,4000))
+	randomSeed = 3006
 
 
 	my_doc = GLOBALCONFIGURATION(

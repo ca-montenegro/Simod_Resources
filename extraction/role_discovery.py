@@ -317,18 +317,28 @@ def read_roles_from_columns(raw_data, filtered_data, separator):
 		records.append(dict(role=role,quantity =quantity,members=members))
 	return records
 
-def read_resource_pool(log, separator=None, drawing=False, sim_percentage=0.0,k=0,quantity_by_cost=0,reverse_cost=0):
+def read_resource_pool(log, separator=None, drawing=False, sim_percentage=0.0,k=0,quantity_by_cost=0,reverse_cost=0,happy_path=False):
     if separator == None and k == 0:
         filtered_list = list()
-        for row in log.data:
-            if row['task'] != 'End' and row['user'] != 'AUTO':
-                filtered_list.append([row['task'],row['user'],row['costxhour'],row['dif_timestamp']])
+        if happy_path:
+            for row in log:
+                if row['task'] != 'End' and row['user'] != 'AUTO':
+                    filtered_list.append([row['task'],row['user'],row['costxhour'],row['dif_timestamp']])
+        else:
+            for row in log.data:
+                if row['task'] != 'End' and row['user'] != 'AUTO':
+                    filtered_list.append([row['task'],row['user'],row['costxhour'],row['dif_timestamp']])
         return role_discovery(filtered_list, drawing, sim_percentage,quantity_by_cost,reverse_cost=reverse_cost)
     elif (separator == None and k > 0):
         filtered_list = list()
-        for row in log.data:
-            if row['task'] != 'End' and row['user'] != 'AUTO':
-                filtered_list.append([row['task'], row['user'],row['costxhour'],row['dif_timestamp']])
+        if happy_path:
+            for row in log:
+                if row['task'] != 'End' and row['user'] != 'AUTO':
+                    filtered_list.append([row['task'], row['user'],row['costxhour'],row['dif_timestamp']])
+        else:
+            for row in log.data:
+                if row['task'] != 'End' and row['user'] != 'AUTO':
+                    filtered_list.append([row['task'], row['user'],row['costxhour'],row['dif_timestamp']])
         return role_freqAct_discovery(filtered_list,k,quantity_by_cost,reverse_cost=reverse_cost)
     else:
         raw_list = list()
