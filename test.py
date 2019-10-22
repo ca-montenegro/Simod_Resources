@@ -279,7 +279,7 @@ def main(argv):
         'repetitions': 1,
         'simulation': True,
         'analysis':True,
-        'flag':[1],
+        'flag':[2],
         'k':[14,16],
         'sim_percentage':70,
         'quantity_by_cost':0,

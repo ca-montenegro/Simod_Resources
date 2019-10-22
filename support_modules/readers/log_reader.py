@@ -80,12 +80,12 @@ class LogReader(object):
             tags = dict(trace='trace',string='string',event='event',date='date',resourcesCost='resourcesCost',resources='resource',happyPath='happyPath',activity = 'activity')
 
         happy_path = list()
-        happyPath = root.findall(tags['happyPath'],ns)
-        for path in happyPath:
-            activities = path.findall(tags['activity'],ns)
-            for activity in activities:
-                activity_name = activity.attrib['value']
-                happy_path.append(dict(task=activity_name))
+        # happyPath = root.findall(tags['happyPath'],ns)
+        # for path in happyPath:
+        #     activities = path.findall(tags['activity'],ns)
+        #     for activity in activities:
+        #         activity_name = activity.attrib['value']
+        #         happy_path.append(dict(task=activity_name))
         resourcesCosts = list()
         resourcesCost = root.findall(tags['resourcesCost'],ns)
         for resource in resourcesCost:
