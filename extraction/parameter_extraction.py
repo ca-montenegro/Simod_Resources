@@ -6,31 +6,41 @@ from extraction import interarrival_definition as arr
 from extraction import gateways_probabilities as gt
 from extraction import role_discovery as rl
 from extraction import schedule_tables as sch
+from support_modules.writers import xml_writer_scylla as xml_scylla
 
 import networkx as nx
 import itertools
 import hashlib
-
+import pandas as pd
 
 # -- Extract parameters --
 def extract_parameters(log, bpmn, process_graph, flag, k, sim_percentage, simulator, quantity_by_cost, reverse_cost,
                        happy_path=False):
-    if bpmn != None and log != None:
+    if bpmn is not None and log is not None:
         bpmnId = bpmn.getProcessId()
         startEventId = bpmn.getStartEventId()
         # Creation of process graph
         # -------------------------------------------------------------------
         # Analysing resource pool LV917 or 247
-        if (flag == 1):
+        if flag == 1:
             roles, resource_table = rl.read_resource_pool(log, sim_percentage=0.0, k=k,
                                                           quantity_by_cost=quantity_by_cost, reverse_cost=reverse_cost,
                                                           happy_path=False)
-        elif (flag == 2):
+        elif flag == 2:
             roles, resource_table = rl.read_resource_pool(log, drawing=False, sim_percentage=sim_percentage,
                                                           quantity_by_cost=quantity_by_cost, reverse_cost=reverse_cost,
                                                           happy_path=False)
+
+        print("--- Initial Resource Pool ---")
+        rolesdf = pd.DataFrame(columns=['Role', 'Quantity', 'Members'])
+        for role in roles:
+            rolesdf = rolesdf.append({'Role': role['role'], 'Quantity': role['quantity'], 'Members': role['members']}, ignore_index = True)
+
+        print(rolesdf.to_string())
+
         # TODO: Create array of possible time tables based on the log and return so it can be print in the global config file for scylla
         resource_pool, time_table, resource_table = sch.analize_schedules(resource_table, log, True, 'LV917')
+
         # -------------------------------------------------------------------
         # Process replaying
         conformed_traces, not_conformed_traces, process_stats = rpl.replay(process_graph, log,
@@ -44,32 +54,43 @@ def extract_parameters(log, bpmn, process_graph, flag, k, sim_percentage, simula
                 role = roleArray[0]['role']
             stat['role'] = role
             # stat['diff_time_res'] = (stat['end_timestamp']-stat['start_timestamp']).total_seconds()
+        prev_roles = []
+        prev_resource_table = []
         if happy_path:
+            prev_roles = roles
+            prev_resource_table = resource_table
+            sup.print_performed_task('Discovering Happy Path ')
             hash_dict = dict()
             array_errors = []
             count_traces_dict = dict()
+            i = 0
             for trace in conformed_traces:
+                sup.print_progress(((i / (len(conformed_traces) - 1)) * 100), 'Discovering Happy Path ')
                 string_tasks = []
                 task_ID_case = 0
                 resource_list = list()
                 for case in trace:
                     task_ID_case = case['caseid']
                     task_name_case = case['task']
-                    resource_list.append(dict(caseid=task_ID_case, task=task_name_case, user=case['user'], costxhour=case['costxhour'],
-                                 dif_timestamp=case['dif_timestamp']))
+                    resource_list.append(
+                        dict(caseid=task_ID_case, task=task_name_case, user=case['user'], costxhour=case['costxhour'],
+                             dif_timestamp=case['dif_timestamp']))
                     string_tasks.append(task_name_case)
                 # string_tasks.append(task_ID_case)
                 string_tasks = ",".join(string_tasks)
                 hash_object_key = hashlib.md5(string_tasks.encode())
                 # print(hash_object_key.hexdigest())
-                if (hash_object_key.hexdigest() not in hash_dict):
-                    hash_dict[hash_object_key.hexdigest()] = [dict(caseid=task_ID_case, resource_list=resource_list )]
+                if hash_object_key.hexdigest() not in hash_dict:
+                    hash_dict[hash_object_key.hexdigest()] = [
+                        dict(caseid=task_ID_case, resource_list=resource_list, string_tasks=string_tasks)]
                 else:
-                    hash_dict[hash_object_key.hexdigest()].append(dict(caseid=task_ID_case, resource_list=resource_list))
-                if (hash_object_key.hexdigest() not in count_traces_dict):
+                    hash_dict[hash_object_key.hexdigest()].append(
+                        dict(caseid=task_ID_case, resource_list=resource_list))
+                if hash_object_key.hexdigest() not in count_traces_dict:
                     count_traces_dict[hash_object_key.hexdigest()] = 1
                 else:
                     count_traces_dict[hash_object_key.hexdigest()] += 1
+                i += 1
             max_key = 0
             max_count = 0
             for k, v in count_traces_dict.items():
@@ -80,42 +101,49 @@ def extract_parameters(log, bpmn, process_graph, flag, k, sim_percentage, simula
             for cases in hash_dict[max_key]:
                 for resources in cases['resource_list']:
                     resources_list_happy.append(
-                        dict(case_id=resources['caseid'], task=resources['task'], user=resources['user'], costxhour=resources['costxhour'],
+                        dict(case_id=resources['caseid'], task=resources['task'], user=resources['user'],
+                             costxhour=resources['costxhour'],
                              dif_timestamp=resources['dif_timestamp']))
-            print(resources_list_happy)
-            # resources_list_happy = list()
-            # for trace in conformed_traces:
-            #     if len(trace)==len(log.happy_path):
-            #         for i,j in zip(trace, log.happy_path):
-            #             if(i['task']!=j['task']):
-            #                 resources_list_happy = list()
-            #                 break
-            #             resources_list_happy.append(dict(caseid = i['caseid'],task=i['task'],user=i['user'],costxhour=i['costxhour'],dif_timestamp=i['dif_timestamp']))
-            # # Analysing resource pool LV917 or 247
-            # if (flag == 1):
-            #     roles, resource_table = rl.read_resource_pool(resources_list_happy, sim_percentage=0.0, k=k,
-            #                                                   quantity_by_cost=quantity_by_cost,
-            #                                                   reverse_cost=reverse_cost,happy_path=happy_path)
-            # elif (flag == 2):
-            #     roles, resource_table = rl.read_resource_pool(resources_list_happy, drawing=False,
-            #                                                   sim_percentage=sim_percentage,
-            #                                                   quantity_by_cost=quantity_by_cost,
-            #                                                   reverse_cost=reverse_cost,happy_path=happy_path)
-            # # TODO: Create array of possible time tables based on the log and return so it can be print in the global config file for scylla
-            # resource_pool, time_table, resource_table = sch.analize_schedules(resource_table, log, True,
-            #                                                                   'LV917')
-            # # -------------------------------------------------------------------
-            # # Process replaying
-            # conformed_traces, not_conformed_traces, process_stats = rpl.replay(process_graph, log,
-            #                                                                    resource_table=resource_table)
-            # # -------------------------------------------------------------------
-            # # Adding role to process stats
-            # for stat in process_stats:
-            #     roleArray = list(filter(lambda x: x['resource'] == stat['resource'], resource_table))
-            #     # print(roleArray)
-            #     if (roleArray != []):
-            #         role = roleArray[0]['role']
-            #     stat['role'] = role
+            sup.print_done_task()
+            print("Happy Path Discovered:")
+            i = 1
+            for taski in hash_dict[max_key][0]['string_tasks'].split(","):
+                print('Task', i, ':', taski)
+                i += 1
+
+            # Analysing resource pool LV917 or 247
+            if (flag == 1):
+                roles, resource_table = rl.read_resource_pool(resources_list_happy, sim_percentage=0.0, k=k,
+                                                              quantity_by_cost=quantity_by_cost,
+                                                              reverse_cost=reverse_cost, happy_path=happy_path)
+            elif (flag == 2):
+                roles, resource_table = rl.read_resource_pool(resources_list_happy, drawing=False,
+                                                              sim_percentage=sim_percentage,
+                                                              quantity_by_cost=quantity_by_cost,
+                                                              reverse_cost=reverse_cost, happy_path=happy_path)
+
+            print("--- Modified Resource Pool ---")
+            rolesdf = pd.DataFrame(columns=['Role', 'Quantity', 'Members'])
+            for role in roles:
+                rolesdf = rolesdf.append(
+                    {'Role': role['role'], 'Quantity': role['quantity'], 'Members': role['members']}, ignore_index=True)
+
+            print(rolesdf.to_string())
+            # TODO: Create array of possible time tables based on the log and return so it can be print in the global config file for scylla
+            resource_pool, time_table, resource_table = sch.analize_schedules(resource_table, log, True,
+                                                                              'LV917')
+            # -------------------------------------------------------------------
+            # Process replaying
+            conformed_traces, not_conformed_traces, process_stats = rpl.replay(process_graph, log,
+                                                                               resource_table=resource_table)
+            # -------------------------------------------------------------------
+            # Adding role to process stats
+            for stat in process_stats:
+                roleArray = list(filter(lambda x: x['resource'] == stat['resource'], resource_table))
+                # print(roleArray)
+                if (roleArray != []):
+                    role = roleArray[0]['role']
+                stat['role'] = role
 
         # for resource in resource_table:
         #     total_diff_time = 0
@@ -198,14 +226,16 @@ def extract_parameters(log, bpmn, process_graph, flag, k, sim_percentage, simula
                                        resource_pool=resource_pool,
                                        elements_data=elements_data_bimp, sequences=sequences,
                                        instances=len(conformed_traces),
-                                       bpmnId=bpmnId, resource_table=resource_table, roles=roles, flag=flag)
+                                       bpmnId=bpmnId, resource_table=resource_table, roles=roles, flag=flag,
+                                       prev_roles=prev_roles, prev_resource_table=prev_resource_table)
                 parameters['bimp'] = parameters_bimp
             elif sim == 'scylla':
                 parameters_scylla = dict(arrival_rate=arrival_rate_scylla, time_table=time_table,
                                          resource_pool=resource_pool,
                                          elements_data=elements_data_scylla, sequences=sequences,
                                          instances=len(conformed_traces),
-                                         bpmnId=bpmnId, resource_table=resource_table, roles=roles, flag=flag)
+                                         bpmnId=bpmnId, resource_table=resource_table, roles=roles, flag=flag,
+                                         prev_roles=prev_roles, prev_resource_table=prev_resource_table)
                 parameters['scylla'] = parameters_scylla
         return parameters, process_stats
 

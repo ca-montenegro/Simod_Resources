@@ -98,7 +98,7 @@ class LogReader(object):
         i = 0
         sup.print_performed_task('Reading log traces ')
         for trace in traces:
-#            sup.print_progress(((i / (len(traces) - 1)) * 100), 'Reading log traces ')
+            sup.print_progress(((i / (len(traces) - 1)) * 100), 'Reading log traces ')
             caseid = ''
             for string in trace.findall(tags['string'], ns):
                 if string.attrib['key'] == 'concept:name':

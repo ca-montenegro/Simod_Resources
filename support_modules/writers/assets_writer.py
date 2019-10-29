@@ -104,16 +104,19 @@ def readResourcesUtilization(filename,outputPath):
         index.append(utilization)
     sup.create_csv_file_header(index, outputPath+'_resourceUtilization.csv')
 #
-def processMetadata(filename,outputPath):
+def processMetadata(filename,outputPath,kpi):
     tree = ET.parse(filename)
     root = tree.getroot()
     index = list()
+    return_kpi = ""
     for process in root.iter('process'):
         metadata = dict(idProcess=process.find('id').text)
         for cost in process.findall('cost'):
             cost_data = dict(cost_min=cost.find('min').text,cost_max=cost.find('max').text,
                           cost_median = cost.find('median').text, cost_Q1 = cost.find('Q1').text,
                           cost_Q3=cost.find('Q3').text,cost_avg = cost.find('avg').text,cost_total=cost.find('total').text)
+            if kpi == 'cost_total':
+                return_kpi = cost_data['cost_total']
             metadata.update(cost_data)
         for time in process.findall('time'):
             for flowTime in time.findall('flow_time'):
@@ -121,6 +124,8 @@ def processMetadata(filename,outputPath):
                                      flowTime_median=flowTime.find('median').text, flowTime_Q1=flowTime.find('Q1').text,
                                      flowTime_Q3=flowTime.find('Q3').text, flowTime_avg=flowTime.find('avg').text,
                                      flowTime_total=flowTime.find('total').text)
+                if kpi == 'flowTime_avg':
+                    return_kpi = flowTime_data['flowTime_avg']
                 metadata.update(flowTime_data)
             for effective in time.findall('effective'):
                 effective_data = dict(effective_min=effective.find('min').text, effective_max=effective.find('max').text,
@@ -133,6 +138,8 @@ def processMetadata(filename,outputPath):
                                     waiting_median=waiting.find('median').text, waiting_Q1=waiting.find('Q1').text,
                                     waiting_Q3=waiting.find('Q3').text, waiting_avg=waiting.find('avg').text,
                                     waiting_total=waiting.find('total').text)
+                if kpi == 'waiting_total':
+                    return_kpi = waiting_data['waiting_total']
                 metadata.update(waiting_data)
             for off_timetable in time.findall('off_timetable'):
                 off_timetable_data = dict(off_timetable_min=off_timetable.find('min').text, off_timetable_max=off_timetable.find('max').text,
@@ -142,6 +149,7 @@ def processMetadata(filename,outputPath):
                 metadata.update(off_timetable_data)
         index.append(metadata)
     sup.create_csv_file_header(index, outputPath + '_processMetadata.csv')
+    return return_kpi
 #
 def instancesData(filename,outputPath):
     tree = ET.parse(filename)

@@ -4,7 +4,7 @@ Created on Thu Mar 28 10:56:25 2019
 
 @author: Manuel Camargo
 """
-#import sys
+# import sys
 import re
 import os
 import subprocess
@@ -50,7 +50,7 @@ def single_exec(settings):
     # Execution steps
     mining_structure(settings, settings['epsilon'], settings['eta'])
     bpmn = br.BpmnReader(os.path.join(settings['output'],
-                                      settings['file'].split('.')[0]+'.bpmn'))
+                                      settings['file'].split('.')[0] + '.bpmn'))
     process_graph = gph.create_process_structure(bpmn)
 
     # Evaluate alignment
@@ -59,15 +59,15 @@ def single_exec(settings):
     print("-- Mining Simulation Parameters --")
     parameters, process_stats = par.extract_parameters(log, bpmn, process_graph)
     xml.print_parameters(os.path.join(settings['output'],
-                                      settings['file'].split('.')[0]+'.bpmn'),
+                                      settings['file'].split('.')[0] + '.bpmn'),
                          os.path.join(settings['output'],
-                                      settings['file'].split('.')[0]+'.bpmn'),
+                                      settings['file'].split('.')[0] + '.bpmn'),
                          parameters)
     response = list()
     status = 'ok'
     sim_values = list()
     if settings['simulation']:
-#        if settings['analysis']:
+        #        if settings['analysis']:
         process_stats = pd.DataFrame.from_records(process_stats)
         for rep in range(settings['repetitions']):
             print("Experiment #" + str(rep + 1))
@@ -98,6 +98,7 @@ def single_exec(settings):
 
     return response
 
+
 # =============================================================================
 # Hyper-optimaizer execution
 # =============================================================================
@@ -119,7 +120,7 @@ def objective(settings):
     # Execution steps
     mining_structure(settings, settings['epsilon'], settings['eta'])
     bpmn = br.BpmnReader(os.path.join(settings['output'],
-                                      settings['file'].split('.')[0]+'.bpmn'))
+                                      settings['file'].split('.')[0] + '.bpmn'))
     process_graph = gph.create_process_structure(bpmn)
 
     # Evaluate alignment
@@ -128,9 +129,9 @@ def objective(settings):
     print("-- Mining Simulation Parameters --")
     parameters, process_stats = par.extract_parameters(log, bpmn, process_graph)
     xml.print_parameters(os.path.join(settings['output'],
-                                      settings['file'].split('.')[0]+'.bpmn'),
+                                      settings['file'].split('.')[0] + '.bpmn'),
                          os.path.join(settings['output'],
-                                      settings['file'].split('.')[0]+'.bpmn'),
+                                      settings['file'].split('.')[0] + '.bpmn'),
                          parameters)
     response = dict()
     measurements = list()
@@ -166,9 +167,9 @@ def objective(settings):
     else:
         response = {'params': settings, 'status': status}
         measurements.append({**{'loss': 1, 'status': status}, **data})
-   
+
     if os.path.getsize(os.path.join('outputs', settings['temp_file'])) > 0:
-        sup.create_csv_file(measurements, os.path.join('outputs', settings['temp_file']),mode='a')
+        sup.create_csv_file(measurements, os.path.join('outputs', settings['temp_file']), mode='a')
     else:
         sup.create_csv_file_header(measurements, os.path.join('outputs', settings['temp_file']))
     return response
@@ -177,16 +178,16 @@ def objective(settings):
 def hyper_execution(settings, args):
     """Execute splitminer for bpmn structure mining."""
     space = {**{'epsilon': hp.uniform('epsilon', args['epsilon'][0], args['epsilon'][1]),
-             'eta': hp.uniform('eta', args['eta'][0], args['eta'][1]),
-             'alg_manag': hp.choice('alg_manag', ['replacement',
-                                                  'repairment',
-                                                  'removal'])}, **settings}
+                'eta': hp.uniform('eta', args['eta'][0], args['eta'][1]),
+                'alg_manag': hp.choice('alg_manag', ['replacement',
+                                                     'repairment',
+                                                     'removal'])}, **settings}
     ## Trials object to track progress
     bayes_trials = Trials()
     ## Optimize
     best = fmin(fn=objective, space=space, algo=tpe.suggest,
                 max_evals=args['max_eval'], trials=bayes_trials, show_progressbar=False)
-    
+
     measurements = list()
     for res in bayes_trials.results:
         measurements.append({
@@ -196,9 +197,11 @@ def hyper_execution(settings, args):
             'eta': res['params']['eta'],
             'status': res['status'],
             'output': res['params']['output']
-            })
+        })
     return best, measurements
-        # Save results
+    # Save results
+
+
 #        measurements = list()
 #        for res in bayes_trials.results:
 #            measurements.append({
@@ -235,6 +238,7 @@ def mining_structure(settings, epsilon, eta):
             os.path.join(settings['output'], settings['file'].split('.')[0])]
     subprocess.call(args)
 
+
 def simulate(settings, rep):
     """Executes BIMP Simulations.
     Args:
@@ -244,11 +248,12 @@ def simulate(settings, rep):
     print("-- Executing BIMP Simulations --")
     args = ['java', '-jar', settings['bimp_path'],
             os.path.join(settings['output'],
-                         settings['file'].split('.')[0]+'.bpmn'),
+                         settings['file'].split('.')[0] + '.bpmn'),
             '-csv',
             os.path.join(settings['output'], 'sim_data',
-                         settings['file'].split('.')[0]+'_'+str(rep+1)+'.csv')]
+                         settings['file'].split('.')[0] + '_' + str(rep + 1) + '.csv')]
     subprocess.call(args)
+
 
 def measure_stats(settings, bpmn, rep):
     """Executes BIMP Simulations.
@@ -258,7 +263,7 @@ def measure_stats(settings, bpmn, rep):
     """
     timeformat = '%Y-%m-%d %H:%M:%S.%f'
     temp = lr.LogReader(os.path.join(settings['output'], 'sim_data',
-                                     settings['file'].split('.')[0] + '_'+str(rep + 1)+'.csv'),
+                                     settings['file'].split('.')[0] + '_' + str(rep + 1) + '.csv'),
                         timeformat)
     process_graph = gph.create_process_structure(bpmn)
     _, _, temp_stats = rpl.replay(process_graph, temp, source='simulation', run_num=rep + 1)
@@ -267,15 +272,17 @@ def measure_stats(settings, bpmn, rep):
     temp_stats['role'] = temp_stats.apply(role, axis=1)
     return temp_stats
 
+
 # =============================================================================
 # Support
 # =============================================================================
 
 def reformat_path(raw_path):
     """Provides path support to different OS path definition"""
-    route = re.split(chr(92)+'|'+chr(92)+chr(92)+'|'+
-                     chr(47)+'|'+chr(47)+chr(47), raw_path)
+    route = re.split(chr(92) + '|' + chr(92) + chr(92) + '|' +
+                     chr(47) + '|' + chr(47) + chr(47), raw_path)
     return os.path.join(*route)
+
 
 def read_settings(settings):
     """Catch parameters fron console or code defined"""
@@ -283,8 +290,18 @@ def read_settings(settings):
     config.read("./config.ini")
     # Basic settings
     settings['input'] = config.get('FOLDERS', 'inputs')
+    settings['file'] = config.get('EXECUTION', 'filename')
     settings['output'] = os.path.join(config.get('FOLDERS', 'outputs'), sup.folder_id())
     settings['timeformat'] = config.get('EXECUTION', 'timeformat')
+    settings['simulation'] = config.get('EXECUTION', 'simulation')
+    settings['analysis'] = config.get('EXECUTION', 'analysis')
+    settings['optimization'] = config.get('EXECUTION', 'optimization')
+    settings['flag'] = config.get('EXECUTION', 'flag')
+    settings['k'] = config.get('EXECUTION', 'k')
+    settings['sim_percentage'] = config.get('EXECUTION', 'sim_percentage')
+    settings['quantity_by_cost'] = config.get('EXECUTION', 'quantity_by_cost')
+    settings['reverse'] = config.get('EXECUTION', 'reverse')
+    settings['happy_path'] = config.get('EXECUTION', 'happy_path')
     # Conditional settings
     settings['miner_path'] = reformat_path(config.get('EXTERNAL', 'splitminer'))
     if settings['alg_manag'] == 'repairment':
@@ -294,5 +311,11 @@ def read_settings(settings):
         settings['aligntype'] = os.path.join(settings['output'],
                                              config.get('ALIGNMENT', 'aligntype'))
     if settings['simulation']:
+        settings['repetitions'] = config.get('EXECUTION', 'repetitions')
         settings['scylla_path'] = reformat_path(config.get('EXTERNAL', 'scylla'))
+        settings['simulator'] = config.get('EXECUTION', 'simulator')
+    if settings['optimization']:
+        settings['objective'] = config.get('OPTIMIZATION', 'objective')
+        settings['criteria'] = config.get('OPTIMIZATION', 'criteria')
+
     return settings
