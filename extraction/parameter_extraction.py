@@ -13,6 +13,7 @@ import itertools
 import hashlib
 import pandas as pd
 
+
 # -- Extract parameters --
 def extract_parameters(log, bpmn, process_graph, flag, k, sim_percentage, simulator, quantity_by_cost, reverse_cost,
                        happy_path=False):
@@ -34,7 +35,12 @@ def extract_parameters(log, bpmn, process_graph, flag, k, sim_percentage, simula
         print("--- Initial Resource Pool ---")
         rolesdf = pd.DataFrame(columns=['Role', 'Quantity', 'Members'])
         for role in roles:
-            rolesdf = rolesdf.append({'Role': role['role'], 'Quantity': role['quantity'], 'Members': role['members']}, ignore_index = True)
+            if flag == 1:
+                rolesdf = rolesdf.append(
+                    {'Role': role['role'], 'Quantity': role['lenRole'], 'Members': role['resource']}, ignore_index=True)
+            elif flag == 2:
+                rolesdf = rolesdf.append(
+                    {'Role': role['role'], 'Quantity': role['quantity'], 'Members': role['members']}, ignore_index=True)
 
         print(rolesdf.to_string())
 
@@ -93,10 +99,10 @@ def extract_parameters(log, bpmn, process_graph, flag, k, sim_percentage, simula
                 i += 1
             max_key = 0
             max_count = 0
-            for k, v in count_traces_dict.items():
+            for key, v in count_traces_dict.items():
                 if v > max_count:
                     max_count = v
-                    max_key = k
+                    max_key = key
             resources_list_happy = list()
             for cases in hash_dict[max_key]:
                 for resources in cases['resource_list']:
@@ -125,8 +131,14 @@ def extract_parameters(log, bpmn, process_graph, flag, k, sim_percentage, simula
             print("--- Modified Resource Pool ---")
             rolesdf = pd.DataFrame(columns=['Role', 'Quantity', 'Members'])
             for role in roles:
-                rolesdf = rolesdf.append(
-                    {'Role': role['role'], 'Quantity': role['quantity'], 'Members': role['members']}, ignore_index=True)
+                if flag == 1:
+                    rolesdf = rolesdf.append(
+                        {'Role': role['role'], 'Quantity': role['lenRole'], 'Members': role['resource']},
+                        ignore_index=True)
+                elif flag == 2:
+                    rolesdf = rolesdf.append(
+                        {'Role': role['role'], 'Quantity': role['quantity'], 'Members': role['members']},
+                        ignore_index=True)
 
             print(rolesdf.to_string())
             # TODO: Create array of possible time tables based on the log and return so it can be print in the global config file for scylla
@@ -187,7 +199,7 @@ def extract_parameters(log, bpmn, process_graph, flag, k, sim_percentage, simula
                 values = list(filter(lambda x: x['task'] == task_name, process_stats))
                 task_processing = [x['processing_time'] for x in values]
 
-                if (sim == 'bimp'):
+                if sim == 'bimp':
                     dist_bimp = td.get_task_distribution(task_processing, simulator=sim)
                     max_role, max_count = '', 0
                     role_sorted = sorted(values, key=lambda x: x['role'])
@@ -202,7 +214,7 @@ def extract_parameters(log, bpmn, process_graph, flag, k, sim_percentage, simula
                              arg2=str(dist_bimp['dparams']['arg2']),
                              resource=find_resource_id(resource_pool, max_role)))
                     sup.print_progress(((i / (len(task_list) - 1)) * 100), 'Analysing tasks data ')
-                elif (sim == 'scylla'):
+                elif sim == 'scylla':
                     dist_scylla = td.get_task_distribution(task_processing, simulator=sim)
                     max_role, max_count = '', 0
                     role_sorted = sorted(values, key=lambda x: x['role'])

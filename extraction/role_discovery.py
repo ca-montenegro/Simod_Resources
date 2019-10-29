@@ -329,7 +329,7 @@ def read_resource_pool(log, separator=None, drawing=False, sim_percentage=0.0,k=
                 if row['task'] != 'End' and row['user'] != 'AUTO':
                     filtered_list.append([row['task'],row['user'],row['costxhour'],row['dif_timestamp']])
         return role_discovery(filtered_list, drawing, sim_percentage,quantity_by_cost,reverse_cost=reverse_cost)
-    elif (separator == None and k > 0):
+    elif separator == None and k > 0:
         filtered_list = list()
         if happy_path:
             for row in log:

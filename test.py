@@ -111,10 +111,24 @@ def objective(params):
     for f in settings['flag'].split(","):
         f = int(f)
         if f == 1:
-            for k in range(params['k'][0], params['k'][1] + 1):
-                print('k = ' + str(k))
-                #settings = sim.read_settings(params)
+            time_start = time.time()
+            optimization = settings['optimization']
+            if optimization and settings['objective'] in ['flowTime_avg', 'cost_total', 'waiting_avg']:
+                opti_folder_id = sup.folder_id()
+                global_results = dict()
+                print("--- Optimization execution started at time:", str(time_start), "---")
+            else:
+                print("--- Execution started at time:", str(time_start), "---")
+            ks = settings['k'].split(",")
+            for k in range(int(ks[0]), int(ks[1]) + 1):
+                print('Using the k = ' + str(k) + " frequent resources per activity")
+                settings = sim.read_settings(params)
                 params['output'] = settings['output']
+                if optimization:
+                    temp = list(os.path.split(settings['output']))
+                    folder_iter_id = temp[1]
+                    temp = [temp[0], 'optimization_' + opti_folder_id, temp[1]]
+                    settings['output'] = os.path.join(*temp)
                 # Output folder creation
                 if not os.path.exists(settings['output']):
                     os.makedirs(settings['output'])
@@ -134,9 +148,9 @@ def objective(params):
 
                 print("-- Mining Simulation Parameters --")
                 parameters, process_stats = par.extract_parameters(log, bpmn, process_graph,
-                                                                   flag=f, k=k, simulator=settings['simulator'],
+                                                                   flag=f, k=int(k), simulator=settings['simulator'].split(","),
                                                                    sim_percentage=0,
-                                                                   quantity_by_cost=settings['quantity_by_cost'],
+                                                                   quantity_by_cost=int(settings['quantity_by_cost']),
                                                                    reverse_cost=settings['reverse'],
                                                                    happy_path=settings['happy_path'])
                 # xml.print_parameters(os.path.join(settings['output'],
@@ -156,7 +170,7 @@ def objective(params):
                 if settings['simulation']:
                     # if settings['analysis']:
                     # process_stats = pd.DataFrame.from_records(process_stats)
-                    for rep in range(settings['repetitions']):
+                    for rep in range(int(settings['repetitions'])):
                         print("Experiment #" + str(rep + 1))
                         try:
                             simulate(settings, rep + 1)
@@ -169,7 +183,12 @@ def objective(params):
                                 if not os.path.exists(new_path):
                                     os.mkdir(new_path)
                                 new_path = os.path.join(new_path, file_name + "_rep" + str(rep + 1))
-                                assets_writer.processMetadata(scylla_output_path, new_path)
+                                if optimization:
+                                    kpi = assets_writer.processMetadata(scylla_output_path, new_path,
+                                                                        settings['objective'])
+                                    global_results[folder_iter_id] = (kpi, int(k))
+                                else:
+                                    _ = assets_writer.processMetadata(scylla_output_path, new_path, 'None')
                                 assets_writer.readResourcesUtilization(scylla_output_path, new_path)
                                 assets_writer.instancesData(scylla_output_path, new_path)
 
@@ -182,6 +201,30 @@ def objective(params):
                             print('Failed ' + str(e))
                             status = STATUS_FAIL
                             break
+            if optimization:
+                # Find global optimal
+                min_val = 1000000000000000000
+                optimal_key = 0
+                max_val = 0
+                optimal_val = 0
+                optimal_k = 0
+                for k, v in global_results.items():
+                    if settings['criteria'] == 'min':
+                        if min_val > float(v[0]):
+                            min_val = float(v[0])
+                            optimal_key = k
+                            optimal_val = min_val
+                            optimal_k = v[1]
+                    elif settings['criteria'] == 'max':
+                        if max_val < float(v[0]):
+                            max_val = float(v[0])
+                            optimal_key = k
+                            optimal_val = max_val
+                            optimal_k = v[1]
+                print('--- Global optimal', settings['criteria'], 'for', settings['objective'], 'is:',
+                      str(optimal_val), 'found in configuration k =', str(optimal_k), 'and in iteration:',
+                      str(optimal_key), '---')
+            print("--- Execution total duration", str(time.time() - time_start), "seconds---")
 
                             #             if status == STATUS_OK:
                             #                 loss = (1 - np.mean([x['act_norm'] for x in sim_values]))
@@ -194,21 +237,24 @@ def objective(params):
                             #             print(response)
         elif f == 2:
             time_start = time.time()
-            print("--- Execution started at time:", str(time_start), "---")
             optimization = settings['optimization']
             if optimization and settings['objective'] in ['flowTime_avg', 'cost_total', 'waiting_avg']:
                 opti_folder_id = sup.folder_id()
                 global_results = dict()
+                print("--- Optimization execution started at time:", str(time_start), "---")
                 #optimization = True
+            else:
+                print("--- Execution started at time:", str(time_start), "---")
             sim_percentage_start = int(settings['sim_percentage'])
+            #output_ref = settings['output']
             for sim_percentageRaw in range(sim_percentage_start, 110, 10):
                 folder_iter_id = 0
                 sim_percentage = sim_percentageRaw / 100
                 print('sim_percentage ' + str(sim_percentage))
-                # settings = sim.read_settings(params)
-                params['output'] = settings['output']
+                settings = sim.read_settings(params)
+                #settings['output'] = output_ref
                 if optimization:
-                    temp = list(os.path.split(params['output']))
+                    temp = list(os.path.split(settings['output']))
                     folder_iter_id = temp[1]
                     temp = [temp[0], 'optimization_' + opti_folder_id, temp[1]]
                     settings['output'] = os.path.join(*temp)
@@ -269,7 +315,7 @@ def objective(params):
                                 if optimization:
                                     kpi = assets_writer.processMetadata(scylla_output_path, new_path,
                                                                         settings['objective'])
-                                    global_results[folder_iter_id] = kpi
+                                    global_results[folder_iter_id] = (kpi,sim_percentage)
                                 else:
                                     _ = assets_writer.processMetadata(scylla_output_path, new_path, 'None')
                                 assets_writer.readResourcesUtilization(scylla_output_path, new_path)
@@ -289,19 +335,23 @@ def objective(params):
                 optimal_key = 0
                 max_val = 0
                 optimal_val = 0
+                optimal_perc = 0
                 for k, v in global_results.items():
                     if settings['criteria'] == 'min':
-                        if min_val > float(v):
-                            min_val = float(v)
+                        if min_val > float(v[0]):
+                            min_val = float(v[0])
                             optimal_key = k
                             optimal_val = min_val
+                            optimal_perc = v[1]
                     elif settings['criteria'] == 'max':
-                        if max_val < float(v):
-                            max_val = float(v)
+                        if max_val < float(v[0]):
+                            max_val = float(v[0])
                             optimal_key = k
                             optimal_val = max_val
+                            optimal_perc = v[1]
                 print('--- Global optimal', settings['criteria'], 'for', settings['objective'], 'is:',
-                      str(optimal_val), 'found in iteration:', str(optimal_key), '---')
+                      str(optimal_val), 'found in configuration with similitude percentage =', str(sim_percentage),
+                      'and in iteration:', str(optimal_key), '---')
             print("--- Execution total duration", str(time.time()-time_start), "seconds---")
 
     #             if status == STATUS_OK:

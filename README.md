@@ -1,3 +1,52 @@
+# Simod + Resources
+
+Simod combines several process mining techniques to fully automate the generation and validation of BPS models. The only input required by the Simod method is an eventlog in XES format.
+Simod + Resources combine the best futures of Simod, though also take into account the specific resources configuration in the process. Simod + Resources let the user define assignation policies based in their preferences. An assignation policy is defined as how the.... Depending on the policy the tool will find the optimal model+resource configuration.
+
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
+
+### System Prerequisites
+Python 3.x
+Java SDK 1.8
+
+### Data format
+
+The tool assumes the input is composed by a case identifier, an activity label, a resource attribute (indicating which resource performed the activity),
+and two timestamps: the start timestamp and the end timestamp. The resource attribute is required in order to discover the available resource pools, their timetables,
+and the mapping between activities and resource pools, which are a required element in a BPS model. We require both start and endtimestamps for each activity instance,
+in order to compute the processing time of activities, which is also a required element in a simulation model.
+As an extra element for this thesis project, per input log in XES format, is required a description of each resource cost. E.g.
+'''
+<resourcesCost>
+		<resource key="Penn Osterwalder" value="10"/>
+</resourcesCost>
+'''
+
+Also, as an optional add-on, is possible to specify the Happy path of the process in its log, following the next structure:
+'''
+<happyPath>
+		<activity key="name" value="Create Purchase Requisition"/>
+		<activity key="name" value="Analyze Purchase Requisition"/>
+		<activity key="name" value="Create Request for Quotation"/>
+		<activity key="name" value="Analyze Request for Quotation"/>
+</happyPath>
+'''
+
+### Execution steps
+
+cd Simod_recursos_scylla
+pip3 install -r requirements.txt
+python3 test.py
+
+### Process configuration
+The process can be setup in the file config.ini to execute different user preferences:
+[Execution][FileName] : XES File name
+[Execution][Repetitions] : How many iterations of the simulation want to be perform
+[Execution][Flag]: Options= 1 or 2. Flag that determines which assignation policy will be perform. Either (1) finding 'm' clusters with the k most frequent resources performing an specific task or (2) clustering resources by a defined percentage of similarity. 'm' represents the number of total activities.
+[Execution][k]: Range in the form of 'min_k, max_k' e.g '4,8'. Min_k represents the lowest value to start finding the clusters with the k most frequent resources performing an specific task, and max_k represents the upper value of this range.
+[Execution][sim_percentage] : Similarity percentage in case the flag 2 was selected. (Value between 0 and 100)
+[Execution][happy_path]
+
 # Simod
 
 Simod combines several process mining techniques to fully automate the generation and validation of BPS models.  The only input required by the Simod method is an eventlog in XES, MXML or CSV format. These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. 
