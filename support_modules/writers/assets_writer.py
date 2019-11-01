@@ -5,12 +5,13 @@ import numpy as np
 import xml.etree.ElementTree as ET
 import os
 import sys, getopt
-#from readers import readers as rd
+# from readers import readers as rd
 import itertools
 
 
 def mean(numbers):
     return float(sum(numbers)) / max(len(numbers), 1)
+
 
 # # Event log mesures processing
 # def export_not_conformed_traces(not_conformed_traces,assets_output ):
@@ -50,73 +51,92 @@ def mean(numbers):
 #
 #
 # # Scyla output processing
-def readResourcesUtilization(filename,outputPath):
+def readResourcesUtilization(filename, outputPath, kpi):
     tree = ET.parse(filename)
     root = tree.getroot()
     index = list()
+    time_total_workload = 0
 
     for resource in root.iter('resource'):
         utilization = dict(
             type=resource.find('type').text
         )
         for cost in resource.findall('cost'):
-            cost_data = dict(cost_min=cost.find('min').text,cost_max=cost.find('max').text,
-                          cost_median = cost.find('median').text, cost_Q1 = cost.find('Q1').text,
-                          cost_Q3=cost.find('Q3').text,cost_avg = cost.find('avg').text,cost_total=cost.find('total').text)
+            cost_data = dict(cost_min=cost.find('min').text, cost_max=cost.find('max').text,
+                             cost_median=cost.find('median').text, cost_Q1=cost.find('Q1').text,
+                             cost_Q3=cost.find('Q3').text, cost_avg=cost.find('avg').text,
+                             cost_total=cost.find('total').text)
             utilization.update(cost_data)
 
         for time in resource.findall('time'):
             for in_use in time.findall('in_use'):
-                in_use_data = dict(time_inUse_min=in_use.find('min').text,time_inUse_max=in_use.find('max').text,
-                          time_inUse_median = in_use.find('median').text, time_inUse_Q1 = in_use.find('Q1').text,
-                          time_inUse_Q3=in_use.find('Q3').text,time_inUse_avg = in_use.find('avg').text,time_inUse_total=in_use.find('total').text)
+                in_use_data = dict(time_inUse_min=in_use.find('min').text, time_inUse_max=in_use.find('max').text,
+                                   time_inUse_median=in_use.find('median').text, time_inUse_Q1=in_use.find('Q1').text,
+                                   time_inUse_Q3=in_use.find('Q3').text, time_inUse_avg=in_use.find('avg').text,
+                                   time_inUse_total=in_use.find('total').text)
                 utilization.update(in_use_data)
 
             for available in time.findall('available'):
-                available_data = dict(time_available_min=available.find('min').text,time_available_max=available.find('max').text,
-                          time_available_median = available.find('median').text, time_available_Q1 = available.find('Q1').text,
-                          time_available_Q3=available.find('Q3').text,time_available_avg = available.find('avg').text,time_available_total=available.find('total').text)
+                available_data = dict(time_available_min=available.find('min').text,
+                                      time_available_max=available.find('max').text,
+                                      time_available_median=available.find('median').text,
+                                      time_available_Q1=available.find('Q1').text,
+                                      time_available_Q3=available.find('Q3').text,
+                                      time_available_avg=available.find('avg').text,
+                                      time_available_total=available.find('total').text)
                 utilization.update(available_data)
 
             for workload in time.findall('workload'):
-                workload_data = dict(time_workload_min=workload.find('min').text,time_workload_max=workload.find('max').text,
-                          time_workload_median = workload.find('median').text, time_workload_Q1 = workload.find('Q1').text,
-                          time_workload_Q3=workload.find('Q3').text,time_workload_avg = workload.find('avg').text,time_workload_total=workload.find('total').text)
+                workload_data = dict(time_workload_min=workload.find('min').text,
+                                     time_workload_max=workload.find('max').text,
+                                     time_workload_median=workload.find('median').text,
+                                     time_workload_Q1=workload.find('Q1').text,
+                                     time_workload_Q3=workload.find('Q3').text,
+                                     time_workload_avg=workload.find('avg').text,
+                                     time_workload_total=workload.find('total').text)
                 utilization.update(workload_data)
+                # if kpi == 'time_workload_total':
+                time_total_workload += float(workload_data['time_workload_total'])
 
         for instances in resource.findall('instances'):
             i = 0
             for instance in instances.findall('instance'):
-                instanceId = 'instances_instance_'+str(i)+'_id'
+                instanceId = 'instances_instance_' + str(i) + '_id'
                 instanceCost = 'instances_instance_' + str(i) + '_cost'
-                instance_data = {instanceId:instance.find('id').text,
-                                 instanceCost:instance.find('cost').text}
+                instance_data = {instanceId: instance.find('id').text,
+                                 instanceCost: instance.find('cost').text}
                 utilization.update(instance_data)
                 for time in instance.findall('time'):
-                    instanceTimeInUse = 'instances_instance_'+str(i)+'_time_inUse'
+                    instanceTimeInUse = 'instances_instance_' + str(i) + '_time_inUse'
                     instanceTimeAvailable = 'instances_instance_' + str(i) + '_time_available'
                     instanceTimeWorkload = 'instances_instance_' + str(i) + '_time_workload'
-                    instance_time_data = {instanceTimeInUse:time.find('in_use').text,
-                                          instanceTimeAvailable:time.find('available').text,
-                                          instanceTimeWorkload:time.find('workload').text}
+                    instance_time_data = {instanceTimeInUse: time.find('in_use').text,
+                                          instanceTimeAvailable: time.find('available').text,
+                                          instanceTimeWorkload: time.find('workload').text}
                     utilization.update(instance_time_data)
-                i+=1
+                i += 1
         index.append(utilization)
-    sup.create_csv_file_header(index, outputPath+'_resourceUtilization.csv')
+    sup.create_csv_file_header(index, outputPath + '_resourceUtilization.csv')
+    # return dict(time_total_workload=time_total_workload)
+    return time_total_workload
+
+
 #
-def processMetadata(filename,outputPath,kpi):
+def processMetadata(filename, outputPath, kpi):
+    global flowTime_data
     tree = ET.parse(filename)
     root = tree.getroot()
     index = list()
-    return_kpi = ""
+    return_kpi = []
     for process in root.iter('process'):
         metadata = dict(idProcess=process.find('id').text)
         for cost in process.findall('cost'):
-            cost_data = dict(cost_min=cost.find('min').text,cost_max=cost.find('max').text,
-                          cost_median = cost.find('median').text, cost_Q1 = cost.find('Q1').text,
-                          cost_Q3=cost.find('Q3').text,cost_avg = cost.find('avg').text,cost_total=cost.find('total').text)
-            if kpi == 'cost_total':
-                return_kpi = cost_data['cost_total']
+            cost_data = dict(cost_min=cost.find('min').text, cost_max=cost.find('max').text,
+                             cost_median=cost.find('median').text, cost_Q1=cost.find('Q1').text,
+                             cost_Q3=cost.find('Q3').text, cost_avg=cost.find('avg').text,
+                             cost_total=cost.find('total').text)
+            # if kpi == 'cost_total':
+            # return_kpi.append(dict(cost_total=cost_data['cost_total']))
             metadata.update(cost_data)
         for time in process.findall('time'):
             for flowTime in time.findall('flow_time'):
@@ -124,12 +144,14 @@ def processMetadata(filename,outputPath,kpi):
                                      flowTime_median=flowTime.find('median').text, flowTime_Q1=flowTime.find('Q1').text,
                                      flowTime_Q3=flowTime.find('Q3').text, flowTime_avg=flowTime.find('avg').text,
                                      flowTime_total=flowTime.find('total').text)
-                if kpi == 'flowTime_avg':
-                    return_kpi = flowTime_data['flowTime_avg']
+                # if kpi == 'flowTime_avg':
+                # return_kpi.append(dict(flowTime_data=flowTime_data['flowTime_avg']))
                 metadata.update(flowTime_data)
             for effective in time.findall('effective'):
-                effective_data = dict(effective_min=effective.find('min').text, effective_max=effective.find('max').text,
-                                      effective_median=effective.find('median').text, effective_Q1=effective.find('Q1').text,
+                effective_data = dict(effective_min=effective.find('min').text,
+                                      effective_max=effective.find('max').text,
+                                      effective_median=effective.find('median').text,
+                                      effective_Q1=effective.find('Q1').text,
                                       effective_Q3=effective.find('Q3').text, effective_avg=effective.find('avg').text,
                                       effective_total=effective.find('total').text)
                 metadata.update(effective_data)
@@ -138,20 +160,26 @@ def processMetadata(filename,outputPath,kpi):
                                     waiting_median=waiting.find('median').text, waiting_Q1=waiting.find('Q1').text,
                                     waiting_Q3=waiting.find('Q3').text, waiting_avg=waiting.find('avg').text,
                                     waiting_total=waiting.find('total').text)
-                if kpi == 'waiting_total':
-                    return_kpi = waiting_data['waiting_total']
+                # if kpi == 'waiting_total':
+                # return_kpi.append(dict(waiting_data=waiting_data['waiting_total']))
                 metadata.update(waiting_data)
             for off_timetable in time.findall('off_timetable'):
-                off_timetable_data = dict(off_timetable_min=off_timetable.find('min').text, off_timetable_max=off_timetable.find('max').text,
-                                          off_timetable_median=off_timetable.find('median').text,off_timetable_Q1=off_timetable.find('Q1').text,
-                                          off_timetable_Q3=off_timetable.find('Q3').text, off_timetable_avg=off_timetable.find('avg').text,
+                off_timetable_data = dict(off_timetable_min=off_timetable.find('min').text,
+                                          off_timetable_max=off_timetable.find('max').text,
+                                          off_timetable_median=off_timetable.find('median').text,
+                                          off_timetable_Q1=off_timetable.find('Q1').text,
+                                          off_timetable_Q3=off_timetable.find('Q3').text,
+                                          off_timetable_avg=off_timetable.find('avg').text,
                                           off_timetable_total=off_timetable.find('total').text)
                 metadata.update(off_timetable_data)
         index.append(metadata)
     sup.create_csv_file_header(index, outputPath + '_processMetadata.csv')
-    return return_kpi
+    return dict(cost_total=cost_data['cost_total'], flowTime_avg=flowTime_data['flowTime_avg'],
+                waiting_avg=waiting_data['waiting_total'])
+
+
 #
-def instancesData(filename,outputPath):
+def instancesData(filename, outputPath):
     tree = ET.parse(filename)
     root = tree.getroot()
     index = list()
@@ -159,13 +187,13 @@ def instancesData(filename,outputPath):
         for instances in process.findall('instances'):
             id = 0
             for instance in instances.findall('instance'):
-                instanceData=(dict(instanceId=id, costs=instance.find('costs').text))
+                instanceData = (dict(instanceId=id, costs=instance.find('costs').text))
                 for time in instance.findall('time'):
                     instanceData.update(dict(duration=time.find('duration').text,
                                              effective=time.find('effective').text,
-                                             waiting = time.find('waiting').text,
-                                             offTime = time.find('offTime').text))
-                id+=1
+                                             waiting=time.find('waiting').text,
+                                             offTime=time.find('offTime').text))
+                id += 1
                 index.append(instanceData)
 
     sup.create_csv_file_header(index, outputPath + '_instancesData.csv')

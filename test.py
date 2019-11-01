@@ -15,6 +15,9 @@ from shutil import copyfile
 
 import pandas as pd
 import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
+import mplcursors
 
 from hyperopt import tpe
 from hyperopt import Trials, hp, fmin, STATUS_OK, STATUS_FAIL
@@ -108,12 +111,19 @@ def measure_stats(settings, bpmn, rep, resource_table):
 
 def objective(params):
     settings = sim.read_settings(params)
+    kpis = ['cost_total', 'flowTime_avg', 'waiting_avg', 'time_workload_total']
+    happy_path = True if settings['happy_path'] == 'True' else False
+    simulation = True if settings['simulation'] == 'True' else False
+    analysis = True if settings['analysis'] == 'True' else False
+    optimization = True if settings['optimization'] == 'True' else False
+    graph_opti = True if settings['graph_optimization'] == 'True' else False
     for f in settings['flag'].split(","):
         f = int(f)
         if f == 1:
             time_start = time.time()
-            optimization = settings['optimization']
-            if optimization and settings['objective'] in ['flowTime_avg', 'cost_total', 'waiting_avg']:
+            # optimization = True if settings['optimization'] == 'True' else False
+            # graph_opti = True if settings['graph_optimization'] == 'True' else False
+            if optimization and settings['objective'] in kpis:
                 opti_folder_id = sup.folder_id()
                 global_results = dict()
                 print("--- Optimization execution started at time:", str(time_start), "---")
@@ -148,11 +158,12 @@ def objective(params):
 
                 print("-- Mining Simulation Parameters --")
                 parameters, process_stats = par.extract_parameters(log, bpmn, process_graph,
-                                                                   flag=f, k=int(k), simulator=settings['simulator'].split(","),
+                                                                   flag=f, k=int(k),
+                                                                   simulator=settings['simulator'].split(","),
                                                                    sim_percentage=0,
                                                                    quantity_by_cost=int(settings['quantity_by_cost']),
                                                                    reverse_cost=settings['reverse'],
-                                                                   happy_path=settings['happy_path'])
+                                                                   happy_path=happy_path)
                 # xml.print_parameters(os.path.join(settings['output'],
                 #                                   settings['file'].split('.')[0] + '.bpmn'),
                 #                      os.path.join(settings['output'],
@@ -167,14 +178,14 @@ def objective(params):
                 response = dict()
                 status = STATUS_OK
                 sim_values = list()
-                if settings['simulation']:
+                if simulation:
                     # if settings['analysis']:
                     # process_stats = pd.DataFrame.from_records(process_stats)
                     for rep in range(int(settings['repetitions'])):
                         print("Experiment #" + str(rep + 1))
                         try:
                             simulate(settings, rep + 1)
-                            if settings['analysis']:
+                            if analysis:
                                 file_name = settings['file'].split(".")[0]
                                 file_global_config_name = file_name + "ScyllaGlobalConfig_resourceutilization.xml"
                                 scylla_output_path = os.path.join(settings['output'], "scyllaSim_rep_" + str(rep + 1),
@@ -184,12 +195,20 @@ def objective(params):
                                     os.mkdir(new_path)
                                 new_path = os.path.join(new_path, file_name + "_rep" + str(rep + 1))
                                 if optimization:
-                                    kpi = assets_writer.processMetadata(scylla_output_path, new_path,
-                                                                        settings['objective'])
-                                    global_results[folder_iter_id] = (kpi, int(k))
+                                    kpi = dict()
+                                    if settings['objective'] in kpis:
+                                        kpi = assets_writer.processMetadata(scylla_output_path, new_path,
+                                                                            settings['objective'])
+                                        kpi['time_workload_total'] = assets_writer. \
+                                            readResourcesUtilization(scylla_output_path, new_path, 'None')
+                                        # elif settings['objective'] in []: _ = assets_writer.processMetadata(
+                                        # scylla_output_path, new_path, settings['objective']) kpi = (
+                                        # assets_writer.readResourcesUtilization(scylla_output_path, new_path,
+                                        # settings['objective']))
+                                        global_results[folder_iter_id] = (kpi, k)
                                 else:
                                     _ = assets_writer.processMetadata(scylla_output_path, new_path, 'None')
-                                assets_writer.readResourcesUtilization(scylla_output_path, new_path)
+                                    _ = assets_writer.readResourcesUtilization(scylla_output_path, new_path, 'None')
                                 assets_writer.instancesData(scylla_output_path, new_path)
 
                                 # process_stats = process_stats.append(measure_stats(settings,
@@ -208,16 +227,20 @@ def objective(params):
                 max_val = 0
                 optimal_val = 0
                 optimal_k = 0
+                labels = []
+                values = []
                 for k, v in global_results.items():
+                    values.append((v[0]))
+                    labels.append(float(v[1]))
                     if settings['criteria'] == 'min':
-                        if min_val > float(v[0]):
-                            min_val = float(v[0])
+                        if min_val > float(v[0][settings['objective']]):
+                            min_val = float(v[0][settings['objective']])
                             optimal_key = k
                             optimal_val = min_val
                             optimal_k = v[1]
                     elif settings['criteria'] == 'max':
-                        if max_val < float(v[0]):
-                            max_val = float(v[0])
+                        if max_val < float(v[0][settings['objective']]):
+                            max_val = float(v[0][settings['objective']])
                             optimal_key = k
                             optimal_val = max_val
                             optimal_k = v[1]
@@ -225,34 +248,86 @@ def objective(params):
                       str(optimal_val), 'found in configuration k =', str(optimal_k), 'and in iteration:',
                       str(optimal_key), '---')
             print("--- Execution total duration", str(time.time() - time_start), "seconds---")
+            if graph_opti:
+                fig, axes = plt.subplots(2, 2, figsize=(10, 8))
+                x = np.arange(len(labels))  # the label locations
+                width = 0.25  # the width of the bars
+                # fig, ax = plt.subplots(
+                kpi_index = 0
+                for i in range(0, 2):
+                    for j in range(0, 2):
+                        lis = []
+                        for value in values:
+                            lis.append(round(float(value[kpis[kpi_index]])))
+                        rects1 = axes[i, j].bar(x, lis, width, label=kpis[kpi_index])
+                        # Add some text for labels, title and custom x-axis tick labels, etc.
+                        axes[i, j].set_ylabel(kpis[kpi_index])
+                        t = (kpis[kpi_index] + ' per K Value')
+                        axes[i, j].set_title(t)
+                        axes[i, j].set_xticks(x)
+                        axes[i, j].set_xticklabels(labels)
+                        axes[i, j].set_xlabel('K Value')
+                        # kpis = ['cost_total', 'flowTime_avg', 'waiting_avg', 'time_workload_total']
+                        if kpi_index == 0:
+                            axes[i, j].set_ylabel('Price units')
+                        else:
+                            axes[i, j].set_ylabel('Seconds')
+                        axes[i, j].legend()
 
-                            #             if status == STATUS_OK:
-                            #                 loss = (1 - np.mean([x['act_norm'] for x in sim_values]))
-                            #                 if loss < 0:
-                            #                     response = {'loss': loss, 'params': params, 'status': STATUS_FAIL}
-                            #                 else:
-                            #                     response = {'loss': loss, 'params': params, 'status': status}
-                            #             else:
-                            #                 response = {'params': params, 'status': status}
-                            #             print(response)
+                        # rects2 = axes[0, 1].bar(x, values[1], width, label=kpis[1])
+                        # # Add some text for labels, title and custom x-axis tick labels, etc.
+                        # axes[0, 1].set_ylabel(kpis[1])
+                        # t = (kpis[1] + ' per similitude percentage')
+                        # axes[0, 1].set_title(t)
+                        # axes[0, 1].set_xticks(x)
+                        # axes[0, 1].set_xticklabels(labels)
+                        # axes[0, 1].legend()
+
+                        def autolabel(rects, axe):
+                            """Attach a text label above each bar in *rects*, displaying its height."""
+                            for rect in rects:
+                                height = rect.get_height()
+                                axe.annotate('{}'.format(height),
+                                             xy=(rect.get_x() + rect.get_width() / 2, height),
+                                             xytext=(0, 3),  # 3 points vertical offset
+                                             textcoords="offset points",
+                                             ha='center', va='bottom')
+
+                        autolabel(rects1, axes[i, j])
+                        # autolabel(rects2, axes[0, 1])
+                        mplcursors.cursor(hover=True)
+                        fig.tight_layout()
+                        kpi_index += 1
+
+                plt.show()
+            #             if status == STATUS_OK:
+            #                 loss = (1 - np.mean([x['act_norm'] for x in sim_values]))
+            #                 if loss < 0:
+            #                     response = {'loss': loss, 'params': params, 'status': STATUS_FAIL}
+            #                 else:
+            #                     response = {'loss': loss, 'params': params, 'status': status}
+            #             else:
+            #                 response = {'params': params, 'status': status}
+            #             print(response)
         elif f == 2:
             time_start = time.time()
-            optimization = settings['optimization']
-            if optimization and settings['objective'] in ['flowTime_avg', 'cost_total', 'waiting_avg']:
+            # optimization = settings['optimization']
+            # graph_opti = settings['graph_optimization']
+            if optimization and settings['objective'] in kpis:
                 opti_folder_id = sup.folder_id()
                 global_results = dict()
                 print("--- Optimization execution started at time:", str(time_start), "---")
-                #optimization = True
+                # optimization = True
             else:
                 print("--- Execution started at time:", str(time_start), "---")
             sim_percentage_start = int(settings['sim_percentage'])
-            #output_ref = settings['output']
+            # output_ref = settings['output']
             for sim_percentageRaw in range(sim_percentage_start, 110, 10):
                 folder_iter_id = 0
                 sim_percentage = sim_percentageRaw / 100
                 print('sim_percentage ' + str(sim_percentage))
                 settings = sim.read_settings(params)
-                #settings['output'] = output_ref
+                # settings['output'] = output_ref
                 if optimization:
                     temp = list(os.path.split(settings['output']))
                     folder_iter_id = temp[1]
@@ -277,11 +352,12 @@ def objective(params):
 
                 print("-- Mining Simulation Parameters --")
                 parameters, process_stats = par.extract_parameters(log, bpmn, process_graph,
-                                                                   flag=f, k=0, simulator=settings['simulator'].split(","),
+                                                                   flag=f, k=0,
+                                                                   simulator=settings['simulator'].split(","),
                                                                    sim_percentage=sim_percentage,
                                                                    quantity_by_cost=int(settings['quantity_by_cost']),
                                                                    reverse_cost=settings['reverse'],
-                                                                   happy_path=settings['happy_path'])
+                                                                   happy_path=happy_path)
                 # xml.print_parameters(os.path.join(settings['output'],
                 #                                  settings['file'].split('.')[0] + '.bpmn'),
                 #                     os.path.join(settings['output'],
@@ -296,14 +372,14 @@ def objective(params):
                 response = dict()
                 status = STATUS_OK
                 sim_values = list()
-                if settings['simulation']:
+                if simulation:
                     # if settings['analysis']:
                     # process_stats = pd.DataFrame.from_records(process_stats)
                     for rep in range(int(settings['repetitions'])):
                         print("Experiment #" + str(rep + 1))
                         try:
                             simulate(settings, rep + 1)
-                            if settings['analysis']:
+                            if analysis:
                                 file_name = settings['file'].split(".")[0]
                                 file_global_config_name = file_name + "ScyllaGlobalConfig_resourceutilization.xml"
                                 scylla_output_path = os.path.join(settings['output'], "scyllaSim_rep_" + str(rep + 1),
@@ -313,12 +389,20 @@ def objective(params):
                                     os.mkdir(new_path)
                                 new_path = os.path.join(new_path, file_name + "_rep" + str(rep + 1))
                                 if optimization:
-                                    kpi = assets_writer.processMetadata(scylla_output_path, new_path,
-                                                                        settings['objective'])
-                                    global_results[folder_iter_id] = (kpi,sim_percentage)
+                                    kpi = dict()
+                                    if settings['objective'] in kpis:
+                                        kpi = assets_writer.processMetadata(scylla_output_path, new_path,
+                                                                            settings['objective'])
+                                        kpi['time_workload_total'] = assets_writer. \
+                                            readResourcesUtilization(scylla_output_path, new_path, 'None')
+                                        # elif settings['objective'] in []: _ = assets_writer.processMetadata(
+                                        # scylla_output_path, new_path, settings['objective']) kpi = (
+                                        # assets_writer.readResourcesUtilization(scylla_output_path, new_path,
+                                        # settings['objective']))
+                                        global_results[folder_iter_id] = (kpi, sim_percentage)
                                 else:
                                     _ = assets_writer.processMetadata(scylla_output_path, new_path, 'None')
-                                assets_writer.readResourcesUtilization(scylla_output_path, new_path)
+                                    _ = assets_writer.readResourcesUtilization(scylla_output_path, new_path, 'None')
                                 assets_writer.instancesData(scylla_output_path, new_path)
 
                                 # process_stats = process_stats.append(measure_stats(settings, bpmn, rep,
@@ -336,23 +420,79 @@ def objective(params):
                 max_val = 0
                 optimal_val = 0
                 optimal_perc = 0
+                labels = []
+                values = []
+                objective_kpi_index = 0
                 for k, v in global_results.items():
+                    values.append((v[0]))
+                    labels.append(float(v[1]))
                     if settings['criteria'] == 'min':
-                        if min_val > float(v[0]):
-                            min_val = float(v[0])
+                        if min_val > float(v[0][settings['objective']]):
+                            min_val = float(v[0][settings['objective']])
                             optimal_key = k
                             optimal_val = min_val
                             optimal_perc = v[1]
                     elif settings['criteria'] == 'max':
-                        if max_val < float(v[0]):
-                            max_val = float(v[0])
+                        if max_val < float(v[0][settings['objective']]):
+                            max_val = float(v[0][settings['objective']])
                             optimal_key = k
                             optimal_val = max_val
                             optimal_perc = v[1]
                 print('--- Global optimal', settings['criteria'], 'for', settings['objective'], 'is:',
-                      str(optimal_val), 'found in configuration with similitude percentage =', str(sim_percentage),
+                      str(optimal_val), 'found in configuration with similitude percentage =', str(optimal_perc),
                       'and in iteration:', str(optimal_key), '---')
-            print("--- Execution total duration", str(time.time()-time_start), "seconds---")
+                print("--- Execution total duration", str(time.time() - time_start), "seconds---")
+                if graph_opti:
+                    fig, axes = plt.subplots(2, 2, figsize=(10, 8))
+                    x = np.arange(len(labels))  # the label locations
+                    width = 0.25  # the width of the bars
+                    # fig, ax = plt.subplots(
+                    kpi_index = 0
+                    for i in range(0, 2):
+                        for j in range(0, 2):
+                            lis = []
+                            for value in values:
+                                lis.append(round(float(value[kpis[kpi_index]])))
+                            rects1 = axes[i, j].bar(x, lis, width, label=kpis[kpi_index])
+                            # Add some text for labels, title and custom x-axis tick labels, etc.
+                            axes[i, j].set_ylabel(kpis[kpi_index])
+                            t = (kpis[kpi_index] + ' per similitude percentage')
+                            axes[i, j].set_title(t)
+                            axes[i, j].set_xticks(x)
+                            axes[i, j].set_xticklabels(labels)
+                            axes[i, j].set_xlabel('Similitude percentage')
+                            # kpis = ['cost_total', 'flowTime_avg', 'waiting_avg', 'time_workload_total']
+                            if kpi_index == 0:
+                                axes[i, j].set_ylabel('Price units')
+                            else:
+                                axes[i, j].set_ylabel('Seconds')
+                            axes[i, j].legend()
+
+                            # rects2 = axes[0, 1].bar(x, values[1], width, label=kpis[1])
+                            # # Add some text for labels, title and custom x-axis tick labels, etc.
+                            # axes[0, 1].set_ylabel(kpis[1])
+                            # t = (kpis[1] + ' per similitude percentage')
+                            # axes[0, 1].set_title(t)
+                            # axes[0, 1].set_xticks(x)
+                            # axes[0, 1].set_xticklabels(labels)
+                            # axes[0, 1].legend()
+
+                            def autolabel(rects, axe):
+                                """Attach a text label above each bar in *rects*, displaying its height."""
+                                for rect in rects:
+                                    height = rect.get_height()
+                                    axe.annotate('{}'.format(height),
+                                                 xy=(rect.get_x() + rect.get_width() / 2, height),
+                                                 xytext=(0, 3),  # 3 points vertical offset
+                                                 textcoords="offset points",
+                                                 ha='center', va='bottom')
+
+                            autolabel(rects1, axes[i, j])
+                            # autolabel(rects2, axes[0, 1])
+                            fig.tight_layout()
+                            kpi_index += 1
+
+                    plt.show()
 
     #             if status == STATUS_OK:
     #                 loss = (1 - np.mean([x['act_norm'] for x in sim_values]))
@@ -368,7 +508,7 @@ def objective(params):
 
 def main(argv):
     space = {
-        #'file': 'PurchasingExampleEditable1.xes',
+        # 'file': 'PurchasingExampleEditable1.xes',
         # 'epsilon': hp.uniform('epsilon', 0.0, 1.0),
         'epsilon': 1,
         'eta': 1,

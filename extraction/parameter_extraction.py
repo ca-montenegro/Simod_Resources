@@ -62,7 +62,8 @@ def extract_parameters(log, bpmn, process_graph, flag, k, sim_percentage, simula
             # stat['diff_time_res'] = (stat['end_timestamp']-stat['start_timestamp']).total_seconds()
         prev_roles = []
         prev_resource_table = []
-        if happy_path:
+        print(happy_path)
+        if happy_path == 'True':
             prev_roles = roles
             prev_resource_table = resource_table
             sup.print_performed_task('Discovering Happy Path ')

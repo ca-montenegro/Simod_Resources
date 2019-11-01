@@ -302,6 +302,7 @@ def read_settings(settings):
     settings['quantity_by_cost'] = config.get('EXECUTION', 'quantity_by_cost')
     settings['reverse'] = config.get('EXECUTION', 'reverse')
     settings['happy_path'] = config.get('EXECUTION', 'happy_path')
+
     # Conditional settings
     settings['miner_path'] = reformat_path(config.get('EXTERNAL', 'splitminer'))
     if settings['alg_manag'] == 'repairment':
@@ -317,5 +318,6 @@ def read_settings(settings):
     if settings['optimization']:
         settings['objective'] = config.get('OPTIMIZATION', 'objective')
         settings['criteria'] = config.get('OPTIMIZATION', 'criteria')
+        settings['graph_optimization'] = config.get('OPTIMIZATION', 'graph_optimization')
 
     return settings
