@@ -302,6 +302,7 @@ def read_settings(settings):
     settings['quantity_by_cost'] = config.get('EXECUTION', 'quantity_by_cost')
     settings['reverse'] = config.get('EXECUTION', 'reverse')
     settings['happy_path'] = config.get('EXECUTION', 'happy_path')
+    settings['graph_roles_flag'] = config.get('EXECUTION','graph_roles_flag')
 
     # Conditional settings
     settings['miner_path'] = reformat_path(config.get('EXTERNAL', 'splitminer'))

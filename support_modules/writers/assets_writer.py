@@ -56,6 +56,7 @@ def readResourcesUtilization(filename, outputPath, kpi):
     root = tree.getroot()
     index = list()
     time_total_workload = 0
+    quantity = 0
 
     for resource in root.iter('resource'):
         utilization = dict(
@@ -97,6 +98,7 @@ def readResourcesUtilization(filename, outputPath, kpi):
                 utilization.update(workload_data)
                 # if kpi == 'time_workload_total':
                 time_total_workload += float(workload_data['time_workload_total'])
+                quantity += 1
 
         for instances in resource.findall('instances'):
             i = 0
@@ -118,7 +120,7 @@ def readResourcesUtilization(filename, outputPath, kpi):
         index.append(utilization)
     sup.create_csv_file_header(index, outputPath + '_resourceUtilization.csv')
     # return dict(time_total_workload=time_total_workload)
-    return time_total_workload
+    return time_total_workload/quantity
 
 
 #

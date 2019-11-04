@@ -4,6 +4,8 @@ from lxml import etree
 from lxml.builder import ElementMaker  # lxml only !
 import pandas as pd
 import xml.etree.ElementTree as ET
+import pandas as pd
+import matplotlib.pyplot as plt
 
 import os
 import re
@@ -18,6 +20,42 @@ def create_file(output_file, element):
     with open(output_file, 'wb') as f:
         f.write(element)
     f.close()
+
+def graph_roles(output,parameters):
+    if parameters['graph_roles'] is not None:
+        fig, ax = plt.subplots(figsize=(10, 8))
+        ax.scatter(parameters['graph_roles']['Role'], parameters['graph_roles']['Member'], alpha=0.8)
+        out = ""
+        if parameters['k'] > 0:
+            out = str(parameters['k'])
+            tit = 'Roles clustered by k =' + out + ' frequent resources'
+
+        elif parameters['sim_percentage'] > 0:
+            out = str(parameters['sim_percentage'])
+            tit = 'Roles clustered by similitude percentage = ' + out
+
+        ax.set_title(tit)
+        ax.set_xlabel('Role')
+        ax.set_ylabel('Resource')
+        ax.grid(True)
+        fig.savefig(output+out+'.png')
+    if parameters['graph_roles_new'] is not None:
+        fig, ax = plt.subplots(figsize=(10, 8))
+        ax.scatter(parameters['graph_roles_new']['Role'], parameters['graph_roles_new']['Member'], alpha=0.8)
+        out = ""
+        if parameters['k'] > 0:
+            out = str(parameters['k'])
+            tit = 'Update Roles clustered by k =' + out + ' frequent resources'
+
+        elif parameters['sim_percentage'] > 0:
+            out = str(parameters['sim_percentage'])
+            tit = 'Update Roles clustered by similitude percentage = ' + out
+
+        ax.set_title(tit)
+        ax.set_xlabel('Role')
+        ax.set_ylabel('Resource')
+        ax.grid(True)
+        fig.savefig(output+out+'Update.png')
 
 
 # -------------- kernel --------------
@@ -344,7 +382,7 @@ def create_resourceTable_file(output_file, resource_table, roles, flag, sim_perc
         resourcesTable.to_csv(output_file)
 
 
-def print_parameters(bpmn_input, output_file, parameters, sim_percentage):
+def print_parameters(bpmn_input, output_file, parameters):
     # time_table = [
     # 	dict(id_t="QBP_DEFAULT_TIMETABLE",default="true",name="Default",from_t = "09:00",to_t="17:00",from_w="MONDAY",to_w="FRIDAY"),
     # 	dict(id_t="QBP_247_TIMETABLE",default="false",name="24/7",from_t = "00:00",to_t="23:59",from_w="MONDAY",to_w="SUNDAY")
@@ -357,16 +395,17 @@ def print_parameters(bpmn_input, output_file, parameters, sim_percentage):
                                          parameters['sequences'], parameters['bpmnId'])
     # root = append_parameters(bpmn_input,my_doc)
     # output_file = str.split(output_file, '.')
+    graph_roles(output_file.split('.')[0] + 'ResourceCluster', parameters)
     create_file(output_file.split('.')[0] + 'GlobalConfig.xml',
                 etree.tostring(my_doc_gloConfig, pretty_print=True, xml_declaration=True))
     create_file(output_file.split('.')[0] + 'SimuConfig.xml',
                 etree.tostring(my_doc_simu, pretty_print=True, xml_declaration=True))
     create_resourceTable_file(output_file.split('.')[0] + 'ResourceTable.csv', parameters['resource_table'],
                               parameters['roles'], parameters['flag'],
-                              sim_percentage)
+                              parameters['sim_percentage'])
     if len(parameters['prev_roles']) > 0:
         create_resourceTable_file(output_file.split('.')[0] + 'Prev_ResourceTable.csv',
                                   parameters['prev_resource_table'], parameters['prev_roles'], parameters['flag'],
-                                  sim_percentage)
+                                  parameters['sim_percentage'])
 # create_file('..'+output_file[2]+'conf.'+output_file[3], etree.tostring(my_doc_gloConfig, pretty_print=True))
 # create_file('..'+output_file[2]+'simu.'+output_file[3], etree.tostring(my_doc_simu, pretty_print=True))

@@ -12,11 +12,12 @@ import networkx as nx
 import itertools
 import hashlib
 import pandas as pd
+import matplotlib.pyplot as plt
 
 
 # -- Extract parameters --
 def extract_parameters(log, bpmn, process_graph, flag, k, sim_percentage, simulator, quantity_by_cost, reverse_cost,
-                       happy_path=False):
+                       happy_path=False, graph_roles_flag=False):
     if bpmn is not None and log is not None:
         bpmnId = bpmn.getProcessId()
         startEventId = bpmn.getStartEventId()
@@ -43,6 +44,19 @@ def extract_parameters(log, bpmn, process_graph, flag, k, sim_percentage, simula
                     {'Role': role['role'], 'Quantity': role['quantity'], 'Members': role['members']}, ignore_index=True)
 
         print(rolesdf.to_string())
+        graph_roles = None
+        graph_roles_new = None
+        if graph_roles_flag:
+            graph_roles = pd.DataFrame(columns=['Role', 'Member'])
+            for role in roles:
+                if flag == 1:
+                    for member in role['resource']:
+                        graph_roles = graph_roles.append({'Role': role['role'].split()[1], 'Member': member},
+                                                         ignore_index=True)
+                elif flag == 2:
+                    for member in role['members']:
+                        graph_roles = graph_roles.append({'Role': role['role'].split()[1], 'Member': member},
+                                                         ignore_index=True)
 
         # TODO: Create array of possible time tables based on the log and return so it can be print in the global config file for scylla
         resource_pool, time_table, resource_table = sch.analize_schedules(resource_table, log, True, 'LV917')
@@ -62,8 +76,7 @@ def extract_parameters(log, bpmn, process_graph, flag, k, sim_percentage, simula
             # stat['diff_time_res'] = (stat['end_timestamp']-stat['start_timestamp']).total_seconds()
         prev_roles = []
         prev_resource_table = []
-        print(happy_path)
-        if happy_path == 'True':
+        if happy_path:
             prev_roles = roles
             prev_resource_table = resource_table
             sup.print_performed_task('Discovering Happy Path ')
@@ -140,6 +153,20 @@ def extract_parameters(log, bpmn, process_graph, flag, k, sim_percentage, simula
                     rolesdf = rolesdf.append(
                         {'Role': role['role'], 'Quantity': role['quantity'], 'Members': role['members']},
                         ignore_index=True)
+
+            if graph_roles_flag:
+                graph_roles_new = pd.DataFrame(columns=['Role', 'Member'])
+                for role in roles:
+                    if flag == 1:
+                        for member in role['resource']:
+                            graph_roles_new = graph_roles_new.append(
+                                {'Role': role['role'].split()[1], 'Member': member},
+                                ignore_index=True)
+                    elif flag == 2:
+                        for member in role['members']:
+                            graph_roles_new = graph_roles_new.append(
+                                {'Role': role['role'].split()[1], 'Member': member},
+                                ignore_index=True)
 
             print(rolesdf.to_string())
             # TODO: Create array of possible time tables based on the log and return so it can be print in the global config file for scylla
@@ -248,7 +275,9 @@ def extract_parameters(log, bpmn, process_graph, flag, k, sim_percentage, simula
                                          elements_data=elements_data_scylla, sequences=sequences,
                                          instances=len(conformed_traces),
                                          bpmnId=bpmnId, resource_table=resource_table, roles=roles, flag=flag,
-                                         prev_roles=prev_roles, prev_resource_table=prev_resource_table)
+                                         prev_roles=prev_roles, prev_resource_table=prev_resource_table,
+                                         graph_roles=graph_roles, k=k, sim_percentage=sim_percentage,
+                                         graph_roles_new=graph_roles_new)
                 parameters['scylla'] = parameters_scylla
         return parameters, process_stats
 

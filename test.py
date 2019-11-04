@@ -117,6 +117,7 @@ def objective(params):
     analysis = True if settings['analysis'] == 'True' else False
     optimization = True if settings['optimization'] == 'True' else False
     graph_opti = True if settings['graph_optimization'] == 'True' else False
+    graph_roles_flag = True if settings['graph_roles_flag'] == 'True' else False
     for f in settings['flag'].split(","):
         f = int(f)
         if f == 1:
@@ -163,7 +164,7 @@ def objective(params):
                                                                    sim_percentage=0,
                                                                    quantity_by_cost=int(settings['quantity_by_cost']),
                                                                    reverse_cost=settings['reverse'],
-                                                                   happy_path=happy_path)
+                                                                   happy_path=happy_path, graph_roles_flag=graph_roles_flag)
                 # xml.print_parameters(os.path.join(settings['output'],
                 #                                   settings['file'].split('.')[0] + '.bpmn'),
                 #                      os.path.join(settings['output'],
@@ -173,7 +174,7 @@ def objective(params):
                                                          settings['file'].split('.')[0] + '.bpmn'),
                                             os.path.join(settings['output'],
                                                          settings['file'].split('.')[0] + 'Scylla.bpmn'),
-                                            parameters['scylla'], sim_percentage=0.0)
+                                            parameters['scylla'])
 
                 response = dict()
                 status = STATUS_OK
@@ -229,6 +230,8 @@ def objective(params):
                 optimal_k = 0
                 labels = []
                 values = []
+                unit = 'Seconds' if settings['objective'] in ['flowTime_avg', 'waiting_avg', 'time_workload_total'] \
+                    else 'Price units'
                 for k, v in global_results.items():
                     values.append((v[0]))
                     labels.append(float(v[1]))
@@ -245,10 +248,13 @@ def objective(params):
                             optimal_val = max_val
                             optimal_k = v[1]
                 print('--- Global optimal', settings['criteria'], 'for', settings['objective'], 'is:',
-                      str(optimal_val), 'found in configuration k =', str(optimal_k), 'and in iteration:',
+                      str(optimal_val), unit, 'found in configuration k =', str(optimal_k), 'and in iteration:',
                       str(optimal_key), '---')
             print("--- Execution total duration", str(time.time() - time_start), "seconds---")
             if graph_opti:
+                graph_kpi_path = list(os.path.split(settings['output']))
+                graph_kpi_path = [graph_kpi_path[0], "kpiResultsGraph.png"]
+                graph_kpi_path = os.path.join(*graph_kpi_path)
                 fig, axes = plt.subplots(2, 2, figsize=(10, 8))
                 x = np.arange(len(labels))  # the label locations
                 width = 0.25  # the width of the bars
@@ -258,7 +264,10 @@ def objective(params):
                     for j in range(0, 2):
                         lis = []
                         for value in values:
-                            lis.append(round(float(value[kpis[kpi_index]])))
+                            if kpi_index == 0 or kpi_index == 3:
+                                lis.append(round(float(value[kpis[kpi_index]])))
+                            else:
+                                lis.append(round(float(value[kpis[kpi_index]])/86400))
                         rects1 = axes[i, j].bar(x, lis, width, label=kpis[kpi_index])
                         # Add some text for labels, title and custom x-axis tick labels, etc.
                         axes[i, j].set_ylabel(kpis[kpi_index])
@@ -270,8 +279,10 @@ def objective(params):
                         # kpis = ['cost_total', 'flowTime_avg', 'waiting_avg', 'time_workload_total']
                         if kpi_index == 0:
                             axes[i, j].set_ylabel('Price units')
-                        else:
+                        elif kpi_index == 3:
                             axes[i, j].set_ylabel('Seconds')
+                        else:
+                            axes[i, j].set_ylabel('Days')
                         axes[i, j].legend()
 
                         # rects2 = axes[0, 1].bar(x, values[1], width, label=kpis[1])
@@ -295,11 +306,12 @@ def objective(params):
 
                         autolabel(rects1, axes[i, j])
                         # autolabel(rects2, axes[0, 1])
-                        mplcursors.cursor(hover=True)
+                        #mplcursors.cursor(hover=True)
                         fig.tight_layout()
                         kpi_index += 1
+                fig.savefig(graph_kpi_path)
 
-                plt.show()
+                # plt.show()
             #             if status == STATUS_OK:
             #                 loss = (1 - np.mean([x['act_norm'] for x in sim_values]))
             #                 if loss < 0:
@@ -357,7 +369,7 @@ def objective(params):
                                                                    sim_percentage=sim_percentage,
                                                                    quantity_by_cost=int(settings['quantity_by_cost']),
                                                                    reverse_cost=settings['reverse'],
-                                                                   happy_path=happy_path)
+                                                                   happy_path=happy_path, graph_roles_flag=graph_roles_flag)
                 # xml.print_parameters(os.path.join(settings['output'],
                 #                                  settings['file'].split('.')[0] + '.bpmn'),
                 #                     os.path.join(settings['output'],
@@ -367,7 +379,7 @@ def objective(params):
                                                          settings['file'].split('.')[0] + '.bpmn'),
                                             os.path.join(settings['output'],
                                                          settings['file'].split('.')[0] + 'Scylla.bpmn'),
-                                            parameters['scylla'], sim_percentage=sim_percentage)
+                                            parameters['scylla'])
 
                 response = dict()
                 status = STATUS_OK
@@ -422,7 +434,8 @@ def objective(params):
                 optimal_perc = 0
                 labels = []
                 values = []
-                objective_kpi_index = 0
+                unit = 'Seconds' if settings['objective'] in ['flowTime_avg', 'waiting_avg', 'time_workload_total'] \
+                    else 'Price units'
                 for k, v in global_results.items():
                     values.append((v[0]))
                     labels.append(float(v[1]))
@@ -439,10 +452,13 @@ def objective(params):
                             optimal_val = max_val
                             optimal_perc = v[1]
                 print('--- Global optimal', settings['criteria'], 'for', settings['objective'], 'is:',
-                      str(optimal_val), 'found in configuration with similitude percentage =', str(optimal_perc),
+                      str(optimal_val), unit, 'found in configuration with similitude percentage =', str(optimal_perc),
                       'and in iteration:', str(optimal_key), '---')
                 print("--- Execution total duration", str(time.time() - time_start), "seconds---")
                 if graph_opti:
+                    graph_kpi_path = list(os.path.split(settings['output']))
+                    graph_kpi_path = [graph_kpi_path[0], "kpiResultsGraph.png"]
+                    graph_kpi_path = os.path.join(*graph_kpi_path)
                     fig, axes = plt.subplots(2, 2, figsize=(10, 8))
                     x = np.arange(len(labels))  # the label locations
                     width = 0.25  # the width of the bars
@@ -452,7 +468,10 @@ def objective(params):
                         for j in range(0, 2):
                             lis = []
                             for value in values:
-                                lis.append(round(float(value[kpis[kpi_index]])))
+                                if kpi_index == 0 or kpi_index == 3:
+                                    lis.append(round(float(value[kpis[kpi_index]])))
+                                else:
+                                    lis.append(round(float(value[kpis[kpi_index]]) / 86400))
                             rects1 = axes[i, j].bar(x, lis, width, label=kpis[kpi_index])
                             # Add some text for labels, title and custom x-axis tick labels, etc.
                             axes[i, j].set_ylabel(kpis[kpi_index])
@@ -464,8 +483,10 @@ def objective(params):
                             # kpis = ['cost_total', 'flowTime_avg', 'waiting_avg', 'time_workload_total']
                             if kpi_index == 0:
                                 axes[i, j].set_ylabel('Price units')
-                            else:
+                            elif kpi_index == 3:
                                 axes[i, j].set_ylabel('Seconds')
+                            else:
+                                axes[i, j].set_ylabel('Days')
                             axes[i, j].legend()
 
                             # rects2 = axes[0, 1].bar(x, values[1], width, label=kpis[1])
@@ -491,8 +512,8 @@ def objective(params):
                             # autolabel(rects2, axes[0, 1])
                             fig.tight_layout()
                             kpi_index += 1
-
-                    plt.show()
+                    fig.savefig(graph_kpi_path)
+                    # fig.show()
 
     #             if status == STATUS_OK:
     #                 loss = (1 - np.mean([x['act_norm'] for x in sim_values]))
