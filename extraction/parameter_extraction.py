@@ -244,18 +244,32 @@ def extract_parameters(log, bpmn, process_graph, flag, k, sim_percentage, simula
                     sup.print_progress(((i / (len(task_list) - 1)) * 100), 'Analysing tasks data ')
                 elif sim == 'scylla':
                     dist_scylla = td.get_task_distribution(task_processing, simulator=sim)
-                    max_role, max_count = '', 0
-                    role_sorted = sorted(values, key=lambda x: x['role'])
-                    for key2, group2 in itertools.groupby(role_sorted, key=lambda x: x['role']):
-                        group_count = list(group2)
-                        if len(group_count) > max_count:
-                            max_count = len(group_count)
-                            max_role = key2
-                    elements_data_scylla.append(
-                        dict(id=sup.gen_id(), elementid=task_id, type=dist_scylla['dname'], name=task_name,
-                             mean=str(dist_scylla['dparams']['mean']), arg1=str(dist_scylla['dparams']['arg1']),
-                             arg2=str(dist_scylla['dparams']['arg2']),
-                             resource=find_resource_id(resource_pool, max_role)))
+                    if flag == 1:
+                        role_per_task = list(filter(lambda x:x['task']==task_name,roles))
+
+                        if(len(role_per_task)>0):
+                            role_per_task = role_per_task[0]['role']
+                            elements_data_scylla.append(
+                                dict(id=sup.gen_id(), elementid=task_id, type=dist_scylla['dname'], name=task_name,
+                                     mean=str(dist_scylla['dparams']['mean']), arg1=str(dist_scylla['dparams']['arg1']),
+                                     arg2=str(dist_scylla['dparams']['arg2']),
+                                     resource=find_resource_id(resource_pool, role_per_task)))
+                        else:
+                            #print(task_name)
+                            continue
+                    elif flag == 2:
+                        max_role, max_count = '', 0
+                        role_sorted = sorted(values, key=lambda x: x['role'])
+                        for key2, group2 in itertools.groupby(role_sorted, key=lambda x: x['role']):
+                            group_count = list(group2)
+                            if len(group_count) > max_count:
+                                max_count = len(group_count)
+                                max_role = key2
+                        elements_data_scylla.append(
+                            dict(id=sup.gen_id(), elementid=task_id, type=dist_scylla['dname'], name=task_name,
+                                 mean=str(dist_scylla['dparams']['mean']), arg1=str(dist_scylla['dparams']['arg1']),
+                                 arg2=str(dist_scylla['dparams']['arg2']),
+                                 resource=find_resource_id(resource_pool, max_role)))
                     sup.print_progress(((i / (len(task_list) - 1)) * 100), 'Analysing tasks data ')
                 i += 1
         sup.print_done_task()

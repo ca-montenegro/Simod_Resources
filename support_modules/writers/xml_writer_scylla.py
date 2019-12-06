@@ -39,6 +39,7 @@ def graph_roles(output,parameters):
         ax.set_ylabel('Resource')
         ax.grid(True)
         fig.savefig(output+out+'.png')
+        plt.close()
     if parameters['graph_roles_new'] is not None:
         fig, ax = plt.subplots(figsize=(10, 8))
         ax.scatter(parameters['graph_roles_new']['Role'], parameters['graph_roles_new']['Member'], alpha=0.8)
@@ -56,6 +57,7 @@ def graph_roles(output,parameters):
         ax.set_ylabel('Resource')
         ax.grid(True)
         fig.savefig(output+out+'Update.png')
+        plt.close()
 
 
 # -------------- kernel --------------

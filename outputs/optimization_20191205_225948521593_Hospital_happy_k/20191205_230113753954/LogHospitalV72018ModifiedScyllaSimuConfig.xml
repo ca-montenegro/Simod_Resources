@@ -1,0 +1,154 @@
+<?xml version='1.0' encoding='ASCII'?>
+<bsim:definitions xmlns:bsim="http://bsim.hpi.uni-potsdam.de/scylla/simModel" targetNamespace="http://www.hpi.de">
+  <bsim:simulationConfiguration id="qbp_da9c4b4c-5190-4123-bb85-bf42f490e2c8" processRef="proc_703504298" processInstances="225" startDateTime="2017-08-14T08:00:00.000Z" resourceAssignmentOrder="priority,simulationTime">
+    <bsim:task id="node_5ef150fa-cde7-43df-beac-a801ff472b60" name="FACTURACIONADMISION">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:constantDistribution>
+          <bsim:constantValue>0</bsim:constantValue>
+        </bsim:constantDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_9" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_c954e245-a52e-47b9-b7ff-d7d3965916f2" name="SALIDAURGENCIAS">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:constantDistribution>
+          <bsim:constantValue>0</bsim:constantValue>
+        </bsim:constantDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_10" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_f0db123b-73a1-4107-aff6-46d448c40017" name="SALIDAEGRESO">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:constantDistribution>
+          <bsim:constantValue>0</bsim:constantValue>
+        </bsim:constantDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_8" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_ed0484be-c5a3-47a6-8a84-7e99c19c0ee9" name="DIGITURNO">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:exponentialDistribution>
+          <bsim:mean>343.4</bsim:mean>
+        </bsim:exponentialDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_1" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_e058bd13-0402-4d41-8145-eff0a033a94d" name="Folio">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:exponentialDistribution>
+          <bsim:mean>967.2</bsim:mean>
+        </bsim:exponentialDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_4" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_7531be53-c83c-43be-91b2-81a5fca66101" name="INGRESOADMISION">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:constantDistribution>
+          <bsim:constantValue>0</bsim:constantValue>
+        </bsim:constantDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_3" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_549f3cf8-baeb-4300-8033-66353022f8fc" name="ATENCIONCONSULTA">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:constantDistribution>
+          <bsim:constantValue>0</bsim:constantValue>
+        </bsim:constantDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_5" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_4e5b9c6e-7808-48c5-887a-b5438d873493" name="HOSPITALIZACIONADMISION">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:constantDistribution>
+          <bsim:constantValue>0</bsim:constantValue>
+        </bsim:constantDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_6" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_34ffe241-aace-40af-b515-2677b537b971" name="EGRESOADMISION">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:constantDistribution>
+          <bsim:constantValue>0</bsim:constantValue>
+        </bsim:constantDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_7" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_a02fa09d-c2e5-4869-bd49-1f2fd32958b3" name="TRIAGE">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:normalDistribution>
+          <bsim:mean>462.3</bsim:mean>
+          <bsim:standardDeviation>282.3</bsim:standardDeviation>
+        </bsim:normalDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_2" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:exclusiveGateway id="node_e02ba434-d6b9-43fe-8314-48f77ab93c9d">
+      <bsim:outgoingSequenceFlow id="node_1fcb41e5-38a0-4906-8c33-07d2044a1030">
+        <bsim:branchingProbability>0.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_f47b846b-a7ad-47ec-bbdf-555615b5dd34">
+        <bsim:branchingProbability>1.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_6fcb9317-0ca8-4327-813c-7a56f5579e06">
+      <bsim:outgoingSequenceFlow id="node_3b6647e5-a75c-496f-bf43-7ed2f427c21f">
+        <bsim:branchingProbability>0.6</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_e0ce4b5c-d8f8-4962-a228-8adf305bc436">
+        <bsim:branchingProbability>0.4</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_cb95f7ad-8054-495d-9411-227f059c54fc">
+      <bsim:outgoingSequenceFlow id="node_90a14ba5-7ae0-437d-aea2-7de4ea9d2c4f">
+        <bsim:branchingProbability>0.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_9f478cae-3a63-4bd3-8738-a1c249090630">
+        <bsim:branchingProbability>1.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_1dbfff0b-bdaf-47b9-aadd-790af536a013">
+      <bsim:outgoingSequenceFlow id="node_fb4f9018-1145-42c3-bb6c-3f9392649120">
+        <bsim:branchingProbability>0.51</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_2a0d7a93-5da6-4d08-9e3d-ec646e5f5acf">
+        <bsim:branchingProbability>0.49</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_cea82864-046f-4d1d-872b-b5c245faec23">
+      <bsim:outgoingSequenceFlow id="node_32d1c7e4-5bb2-4770-a7c4-0e6c42610e88">
+        <bsim:branchingProbability>0.07</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_f07a0cff-bd53-47d6-a1fb-58142f401069">
+        <bsim:branchingProbability>0.93</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:startEvent id="node_df6513d8-024f-48fd-8b7b-39b84a4fdc18">
+      <bsim:arrivalRate timeUnit="SECONDS">
+        <bsim:uniformDistribution>
+          <bsim:lower>4834.0</bsim:lower>
+          <bsim:upper>33852.0</bsim:upper>
+        </bsim:uniformDistribution>
+      </bsim:arrivalRate>
+    </bsim:startEvent>
+  </bsim:simulationConfiguration>
+</bsim:definitions>

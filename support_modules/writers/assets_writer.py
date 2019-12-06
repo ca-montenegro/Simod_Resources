@@ -97,7 +97,7 @@ def readResourcesUtilization(filename, outputPath, kpi):
                                      time_workload_total=workload.find('total').text)
                 utilization.update(workload_data)
                 # if kpi == 'time_workload_total':
-                time_total_workload += float(workload_data['time_workload_total'])
+                time_total_workload += float(workload_data['time_workload_avg'])
                 quantity += 1
 
         for instances in resource.findall('instances'):

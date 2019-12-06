@@ -139,6 +139,7 @@ def role_definition(sub_graphs,users,taskResourcesNames,data,quantity_by_cost=0,
         records = sorted(records, key=itemgetter('quantity'), reverse=True)
         for i in range(0,len(records)):
             records[i]['role']='Role '+ str(i + 1)
+            records[i]['role_ID']='Role_'+str(i+1)
             sum_costxhour = 0
             for mem in records[i]['members']:
               sum_costxhour += int(list(filter(lambda x:x[1]==mem,data))[0][2])
@@ -150,7 +151,7 @@ def role_definition(sub_graphs,users,taskResourcesNames,data,quantity_by_cost=0,
                 registers = list(filter(lambda x:x[1]==member,data))
                 for register in registers:
                     diff_time+=register[3].total_seconds()
-                resource_table.append(dict(role=record['role'], resource=member,costxhour=int(list(filter(lambda x:x[1]==member,data))[0][2]),avg_costxhour=record['avg_costxhour'],dif_timestamp=diff_time))
+                resource_table.append(dict(role=record['role'], roleID=record['role_ID'], resource=member,costxhour=int(list(filter(lambda x:x[1]==member,data))[0][2]),avg_costxhour=record['avg_costxhour'],dif_timestamp=diff_time))
         if quantity_by_cost>0:
             resource_table_group_by_role = groupby(resource_table, key=itemgetter('role'))
             temp = []
@@ -163,6 +164,7 @@ def role_definition(sub_graphs,users,taskResourcesNames,data,quantity_by_cost=0,
     elif taskResourcesNames!=None:
         for i in range(0,len(taskResourcesNames)):
             taskResourcesNames[i]['role']='Role '+str(i+1)
+            taskResourcesNames[i]['role_ID'] = 'Role_'+str(i+1)
             sum_costxhour = 0
             for mem in taskResourcesNames[i]['resource']:
                 sum_costxhour += int(list(filter(lambda x: x[1] == mem, data))[0][2])
@@ -177,7 +179,7 @@ def role_definition(sub_graphs,users,taskResourcesNames,data,quantity_by_cost=0,
                     registers = list(filter(lambda x: x[1] == member, data))
                     for register in registers:
                         diff_time += register[3].total_seconds()
-                    resource_table.append(dict(role=taskRes['role'],resource=member,avg_costxhour = taskRes['avg_costxhour'],costxhour=int(list(filter(lambda x:x[1]==member,data))[0][2]),dif_timestamp=diff_time))
+                    resource_table.append(dict(role=taskRes['role'],roleID=taskRes['role_ID'], resource=member,avg_costxhour = taskRes['avg_costxhour'],costxhour=int(list(filter(lambda x:x[1]==member,data))[0][2]),dif_timestamp=diff_time))
         if quantity_by_cost>0:
             print(quantity_by_cost)
             print(resource_table)

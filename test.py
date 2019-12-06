@@ -111,7 +111,7 @@ def measure_stats(settings, bpmn, rep, resource_table):
 
 def objective(params):
     settings = sim.read_settings(params)
-    kpis = ['cost_total', 'flowTime_avg', 'waiting_avg', 'time_workload_total']
+    kpis = ['cost_total', 'flowTime_avg', 'waiting_avg', 'time_workload_avg']
     happy_path = True if settings['happy_path'] == 'True' else False
     simulation = True if settings['simulation'] == 'True' else False
     analysis = True if settings['analysis'] == 'True' else False
@@ -200,7 +200,7 @@ def objective(params):
                                     if settings['objective'] in kpis:
                                         kpi = assets_writer.processMetadata(scylla_output_path, new_path,
                                                                             settings['objective'])
-                                        kpi['time_workload_total'] = assets_writer. \
+                                        kpi['time_workload_avg'] = assets_writer. \
                                             readResourcesUtilization(scylla_output_path, new_path, 'None')
                                         # elif settings['objective'] in []: _ = assets_writer.processMetadata(
                                         # scylla_output_path, new_path, settings['objective']) kpi = (
@@ -230,7 +230,7 @@ def objective(params):
                 optimal_k = 0
                 labels = []
                 values = []
-                unit = 'Seconds' if settings['objective'] in ['flowTime_avg', 'waiting_avg', 'time_workload_total'] \
+                unit = 'Seconds' if settings['objective'] in ['flowTime_avg', 'waiting_avg', 'time_workload_avg'] \
                     else 'Price units'
                 for k, v in global_results.items():
                     values.append((v[0]))
@@ -253,19 +253,31 @@ def objective(params):
             print("--- Execution total duration", str(time.time() - time_start), "seconds---")
             if graph_opti:
                 graph_kpi_path = list(os.path.split(settings['output']))
+                csv_kpi_path = [graph_kpi_path[0], 'kpiResultsTable.csv']
+                csv_kpi_path = os.path.join(*csv_kpi_path)
                 graph_kpi_path = [graph_kpi_path[0], "kpiResultsGraph.png"]
                 graph_kpi_path = os.path.join(*graph_kpi_path)
                 fig, axes = plt.subplots(2, 2, figsize=(10, 8))
                 x = np.arange(len(labels))  # the label locations
                 width = 0.25  # the width of the bars
                 # fig, ax = plt.subplots(
+                pd_results = pd.DataFrame(columns=['K-Value', 'cost_total', 'flowTime_avg', 'waiting_avg',
+                                                   'time_workload_avg'])
+                kpi_index = 0
+                for value in values:
+                    value['K-Value'] = labels[kpi_index]
+                    kpi_index += 1
+                    pd_results = pd_results.append(value, ignore_index=True)
+                pd_results.to_csv(csv_kpi_path, sep=',')
                 kpi_index = 0
                 for i in range(0, 2):
                     for j in range(0, 2):
                         lis = []
                         for value in values:
-                            if kpi_index == 0 or kpi_index == 3:
+                            if kpi_index == 0:
                                 lis.append(round(float(value[kpis[kpi_index]])))
+                            elif kpi_index == 3:
+                                lis.append(float("{0:.2f}".format(float(value[kpis[kpi_index]]))))
                             else:
                                 lis.append(round(float(value[kpis[kpi_index]])/86400))
                         rects1 = axes[i, j].bar(x, lis, width, label=kpis[kpi_index])
@@ -276,7 +288,7 @@ def objective(params):
                         axes[i, j].set_xticks(x)
                         axes[i, j].set_xticklabels(labels)
                         axes[i, j].set_xlabel('K Value')
-                        # kpis = ['cost_total', 'flowTime_avg', 'waiting_avg', 'time_workload_total']
+                        # kpis = ['cost_total', 'flowTime_avg', 'waiting_avg', 'time_workload_avg']
                         if kpi_index == 0:
                             axes[i, j].set_ylabel('Price units')
                         elif kpi_index == 3:
@@ -405,7 +417,7 @@ def objective(params):
                                     if settings['objective'] in kpis:
                                         kpi = assets_writer.processMetadata(scylla_output_path, new_path,
                                                                             settings['objective'])
-                                        kpi['time_workload_total'] = assets_writer. \
+                                        kpi['time_workload_avg'] = assets_writer. \
                                             readResourcesUtilization(scylla_output_path, new_path, 'None')
                                         # elif settings['objective'] in []: _ = assets_writer.processMetadata(
                                         # scylla_output_path, new_path, settings['objective']) kpi = (
@@ -434,7 +446,7 @@ def objective(params):
                 optimal_perc = 0
                 labels = []
                 values = []
-                unit = 'Seconds' if settings['objective'] in ['flowTime_avg', 'waiting_avg', 'time_workload_total'] \
+                unit = 'Seconds' if settings['objective'] in ['flowTime_avg', 'waiting_avg', 'time_workload_avg'] \
                     else 'Price units'
                 for k, v in global_results.items():
                     values.append((v[0]))
@@ -457,12 +469,22 @@ def objective(params):
                 print("--- Execution total duration", str(time.time() - time_start), "seconds---")
                 if graph_opti:
                     graph_kpi_path = list(os.path.split(settings['output']))
+                    csv_kpi_path = [graph_kpi_path[0], 'kpiResultsTable.csv']
+                    csv_kpi_path = os.path.join(*csv_kpi_path)
                     graph_kpi_path = [graph_kpi_path[0], "kpiResultsGraph.png"]
                     graph_kpi_path = os.path.join(*graph_kpi_path)
                     fig, axes = plt.subplots(2, 2, figsize=(10, 8))
                     x = np.arange(len(labels))  # the label locations
                     width = 0.25  # the width of the bars
                     # fig, ax = plt.subplots(
+                    pd_results = pd.DataFrame(columns=['Sim_Percentage', 'cost_total', 'flowTime_avg', 'waiting_avg',
+                                                       'time_workload_avg'])
+                    kpi_index = 0
+                    for value in values:
+                        value['Sim_Percentage'] = labels[kpi_index]
+                        kpi_index += 1
+                        pd_results = pd_results.append(value, ignore_index=True)
+                    pd_results.to_csv(csv_kpi_path, sep=',')
                     kpi_index = 0
                     for i in range(0, 2):
                         for j in range(0, 2):
@@ -480,7 +502,7 @@ def objective(params):
                             axes[i, j].set_xticks(x)
                             axes[i, j].set_xticklabels(labels)
                             axes[i, j].set_xlabel('Similitude percentage')
-                            # kpis = ['cost_total', 'flowTime_avg', 'waiting_avg', 'time_workload_total']
+                            # kpis = ['cost_total', 'flowTime_avg', 'waiting_avg', 'time_workload_avg']
                             if kpi_index == 0:
                                 axes[i, j].set_ylabel('Price units')
                             elif kpi_index == 3:
@@ -513,6 +535,7 @@ def objective(params):
                             fig.tight_layout()
                             kpi_index += 1
                     fig.savefig(graph_kpi_path)
+                    plt.close()
                     # fig.show()
 
     #             if status == STATUS_OK:

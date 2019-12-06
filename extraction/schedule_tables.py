@@ -36,10 +36,11 @@ def analize_schedules(resource_table, log, default=False, dtype=None):
         quantityRoles = 0
         for key, group in itertools.groupby(data, key=lambda x:x['role']):
             values = list(group)
+            id_current_role = key.split()[1]
             group_resources = [x for x in values]
             resource_pool.append(
                 #TODO: Assign timetable id per resource
-                dict(id="Role_"+str(quantityRoles+1), name=key, total_amount=str(len(group_resources)),instances=group_resources, costxhour=[x['costxhour']for x in group_resources],avg_costxhour=group_resources[0]['avg_costxhour'],
+                dict(id=group_resources[0]['roleID'], name=key, total_amount=str(len(group_resources)),instances=group_resources, costxhour=[x['costxhour']for x in group_resources],avg_costxhour=group_resources[0]['avg_costxhour'],
                      timetable_id="QBP_DEFAULT_TIMETABLE"))
             quantityRoles+=1
         #resource_pool[0]['id'] = 'Role_0'

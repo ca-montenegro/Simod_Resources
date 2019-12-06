@@ -1,0 +1,245 @@
+<?xml version='1.0' encoding='ASCII'?>
+<bsim:definitions xmlns:bsim="http://bsim.hpi.uni-potsdam.de/scylla/simModel" targetNamespace="http://www.hpi.de">
+  <bsim:simulationConfiguration id="qbp_68809eb4-c191-41a7-8992-a57d4111f3c9" processRef="proc_916419490" processInstances="225" startDateTime="2017-08-14T08:00:00.000Z" resourceAssignmentOrder="priority,simulationTime">
+    <bsim:task id="node_d1d01402-6e67-433f-95df-4a29562a6b2b" name="Turning &amp; Milling">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:triangularDistribution>
+          <bsim:lower>480.0</bsim:lower>
+          <bsim:upper>38100.0</bsim:upper>
+          <bsim:peak>6240.0</bsim:peak>
+        </bsim:triangularDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_2" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_33ed4f74-3e83-4bf1-af33-ab5100a4ec9d" name="Turning &amp; Milling Q.C.">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:triangularDistribution>
+          <bsim:lower>120.0</bsim:lower>
+          <bsim:upper>8280.0</bsim:upper>
+          <bsim:peak>180.0</bsim:peak>
+        </bsim:triangularDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_3" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_5878f7e6-eecc-4ab1-89e1-da27869a1761" name="Laser Marking">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:uniformDistribution>
+          <bsim:lower>60.0</bsim:lower>
+          <bsim:upper>4500.0</bsim:upper>
+        </bsim:uniformDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_4" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_2f152af6-a5c5-465f-b375-9ff8dec5f244" name="Packing">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:constantDistribution>
+          <bsim:constantValue>3600</bsim:constantValue>
+        </bsim:constantDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_8" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_fc383cac-9005-456e-b3a4-3df3d5f313f8" name="Lapping">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:exponentialDistribution>
+          <bsim:mean>4860.0</bsim:mean>
+        </bsim:exponentialDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_5" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_46e04439-7c96-4f75-a8b2-006f8c104d46" name="Round Grinding">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:triangularDistribution>
+          <bsim:lower>60.0</bsim:lower>
+          <bsim:upper>22440.0</bsim:upper>
+          <bsim:peak>6000.0</bsim:peak>
+        </bsim:triangularDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_1" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:task id="node_8888c100-25b8-48e3-8c48-7a75f990a755" name="Final Inspection Q.C.">
+      <bsim:duration timeUnit="SECONDS">
+        <bsim:triangularDistribution>
+          <bsim:lower>60.0</bsim:lower>
+          <bsim:upper>22200.0</bsim:upper>
+          <bsim:peak>3600.0</bsim:peak>
+        </bsim:triangularDistribution>
+      </bsim:duration>
+      <bsim:resources>
+        <bsim:resource id="Role_7" amount="1"/>
+      </bsim:resources>
+    </bsim:task>
+    <bsim:exclusiveGateway id="node_a82f1b37-3e35-414b-a149-96ac5394d26f">
+      <bsim:outgoingSequenceFlow id="node_7b6fe841-0bda-443a-852d-5bdc38d18339">
+        <bsim:branchingProbability>0.92</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_4f79500b-342f-416e-9757-8ce75c207f0b">
+        <bsim:branchingProbability>0.08</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_0534c188-f9b0-4876-af3b-edfb22a1ac77">
+      <bsim:outgoingSequenceFlow id="node_40501f73-9453-49af-a082-76fc0b8351f3">
+        <bsim:branchingProbability>0.92</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_3d0f34cb-c824-4e43-a8d7-ddc1684b0c4b">
+        <bsim:branchingProbability>0.08</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_69e2dd6b-54af-416e-9399-a3a763ecd2f1">
+      <bsim:outgoingSequenceFlow id="node_280cb6ff-6e29-42d2-8b39-cd6b2ad64aa1">
+        <bsim:branchingProbability>0.27</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_21d34ec8-1641-4b21-8f81-c985bed2eaec">
+        <bsim:branchingProbability>0.73</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_63805d8f-80e2-437a-b349-b9da2dee8070">
+      <bsim:outgoingSequenceFlow id="node_4edc3df1-e30b-43a6-a19e-2f8c3824df7a">
+        <bsim:branchingProbability>0.12</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_a339a3c9-9cdf-4c81-940f-22ceab4ae85a">
+        <bsim:branchingProbability>0.88</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_7cf56063-8883-40f6-9962-15c6c4f4282b">
+      <bsim:outgoingSequenceFlow id="node_a7ccef11-94e0-4777-af1c-912b4f265b3b">
+        <bsim:branchingProbability>0.07</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_5fae2993-81c5-4345-8e53-5ef09110a7dc">
+        <bsim:branchingProbability>0.93</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_ee42cbcc-1fae-46e5-8f46-3f5594fae3ed">
+      <bsim:outgoingSequenceFlow id="node_2437623c-3fd0-4441-af09-b960c9384ce7">
+        <bsim:branchingProbability>0.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_526a0fa4-a5a2-4044-8db4-5d753238479b">
+        <bsim:branchingProbability>1.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_ee71e135-033c-4828-9cf4-5ea47d8fa921">
+      <bsim:outgoingSequenceFlow id="node_60c6be53-58f9-4089-b5c1-3ac0fa7010c8">
+        <bsim:branchingProbability>1</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_c5e7749e-62ef-4374-a372-58b034695d05">
+        <bsim:branchingProbability>0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_cf10c337-5edf-4d3d-8a2c-5e2ae92f9343">
+      <bsim:outgoingSequenceFlow id="node_690a285a-3f60-4af2-87b1-433464036d70">
+        <bsim:branchingProbability>0.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_0e2da550-f921-4a20-bafa-15c6305be848">
+        <bsim:branchingProbability>1.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_ce7a0148-cd21-4c0a-96e4-de6ee6c4d88d">
+      <bsim:outgoingSequenceFlow id="node_e5abdd8e-f1ea-422d-878f-887241a29f87">
+        <bsim:branchingProbability>0.67</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_8da64d6e-e96e-4eb8-8d36-39351bf8a87d">
+        <bsim:branchingProbability>0.33</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_ae0f2db8-1284-467d-936c-eb602290de5a">
+      <bsim:outgoingSequenceFlow id="node_cd5d49ae-7797-42f3-bff4-de33ca61dee3">
+        <bsim:branchingProbability>0.97</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_f710b589-91a3-431c-b931-c062f538b606">
+        <bsim:branchingProbability>0.03</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_693790c5-893b-436b-9f99-7ebefe7d433d">
+      <bsim:outgoingSequenceFlow id="node_082384e8-cd59-477c-b166-f29362eb5599">
+        <bsim:branchingProbability>0.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_cb9ed0d1-7dc0-48cd-a4d4-860a1568c894">
+        <bsim:branchingProbability>1.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_ae0d56a3-abb1-4938-aab6-41b00fc57039">
+      <bsim:outgoingSequenceFlow id="node_3d174b3d-a465-4c91-b9a2-cf090dc0f9f2">
+        <bsim:branchingProbability>0.07</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_37386a42-2533-4f16-a38f-f8f117fb708c">
+        <bsim:branchingProbability>0.93</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_738acdd1-18fd-45a9-b36d-46127f38ad4a">
+      <bsim:outgoingSequenceFlow id="node_7426e576-4034-465f-80af-ff4b515c6fb9">
+        <bsim:branchingProbability>0.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_42a50ee2-106e-4e4b-a7f6-1f38b84d4cbb">
+        <bsim:branchingProbability>1.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_a399881e-13c2-4b4b-b2d7-944dcc246954">
+      <bsim:outgoingSequenceFlow id="node_268ffe8f-61d3-47e3-b118-70943cad9917">
+        <bsim:branchingProbability>0.07</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_22534f44-5dd8-4a81-b1cf-a66d7d9dd666">
+        <bsim:branchingProbability>0.93</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_dab41cf0-cc38-48f6-8600-5c7ff6b1b9ba">
+      <bsim:outgoingSequenceFlow id="node_a485c642-492b-4484-a8aa-6dc41abba77d">
+        <bsim:branchingProbability>1.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_890a30f2-954d-4e8f-b15b-f7aed3d90ce1">
+        <bsim:branchingProbability>0.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_c4715df2-8b55-48e1-aa18-59f890bceeea">
+      <bsim:outgoingSequenceFlow id="node_9965241c-e9af-40f6-ab93-52befa885bac">
+        <bsim:branchingProbability>0.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_0594be71-ac2c-4c09-a16a-4c0814c0a2e5">
+        <bsim:branchingProbability>1.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_bf18b931-2fa8-4795-a3a2-1f3f25967cfe">
+      <bsim:outgoingSequenceFlow id="node_a6e48bb2-5952-4232-b6c8-2fc57f786e1b">
+        <bsim:branchingProbability>1.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_2c4749ea-7aa6-459e-9adf-89ccda684ecf">
+        <bsim:branchingProbability>0.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_211634b4-828b-4573-b6eb-61dc002a85a5">
+      <bsim:outgoingSequenceFlow id="node_72ce2fdd-cd62-41fc-a6fb-ab4829c5002b">
+        <bsim:branchingProbability>1.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_5ddc948d-f749-42ea-8d60-283ea60aa049">
+        <bsim:branchingProbability>0.0</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:exclusiveGateway id="node_35c7975d-863e-4fdd-b218-cbbd87fce643">
+      <bsim:outgoingSequenceFlow id="node_2b8dee51-343d-4d77-aa77-6e616083b1f6">
+        <bsim:branchingProbability>0.54</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+      <bsim:outgoingSequenceFlow id="node_64389b51-b372-4f37-b5ae-e1736f471c68">
+        <bsim:branchingProbability>0.46</bsim:branchingProbability>
+      </bsim:outgoingSequenceFlow>
+    </bsim:exclusiveGateway>
+    <bsim:startEvent id="node_c251fc67-a12c-4ea4-b37f-0d70477895a2">
+      <bsim:arrivalRate timeUnit="SECONDS">
+        <bsim:triangularDistribution>
+          <bsim:lower>780.0</bsim:lower>
+          <bsim:upper>57600.0</bsim:upper>
+          <bsim:peak>780.0</bsim:peak>
+        </bsim:triangularDistribution>
+      </bsim:arrivalRate>
+    </bsim:startEvent>
+  </bsim:simulationConfiguration>
+</bsim:definitions>
