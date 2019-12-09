@@ -12,6 +12,7 @@ import networkx as nx
 import itertools
 import hashlib
 import pandas as pd
+import warnings
 import matplotlib.pyplot as plt
 
 
@@ -118,72 +119,76 @@ def extract_parameters(log, bpmn, process_graph, flag, k, sim_percentage, simula
                     max_count = v
                     max_key = key
             resources_list_happy = list()
-            for cases in hash_dict[max_key]:
-                for resources in cases['resource_list']:
-                    resources_list_happy.append(
-                        dict(case_id=resources['caseid'], task=resources['task'], user=resources['user'],
-                             costxhour=resources['costxhour'],
-                             dif_timestamp=resources['dif_timestamp']))
-            sup.print_done_task()
-            print("Happy Path Discovered:")
-            i = 1
-            for taski in hash_dict[max_key][0]['string_tasks'].split(","):
-                print('Task', i, ':', taski)
-                i += 1
+            if max_count == 1:
+                print()
+                warnings.warn("Happy Path impossible to discover: All traces are different", Warning)
+            else:
+                for cases in hash_dict[max_key]:
+                    for resources in cases['resource_list']:
+                        resources_list_happy.append(
+                            dict(case_id=resources['caseid'], task=resources['task'], user=resources['user'],
+                                 costxhour=resources['costxhour'],
+                                 dif_timestamp=resources['dif_timestamp']))
+                sup.print_done_task()
+                print("Happy Path Discovered:")
+                i = 1
+                for taski in hash_dict[max_key][0]['string_tasks'].split(","):
+                    print('Task', i, ':', taski)
+                    i += 1
 
-            # Analysing resource pool LV917 or 247
-            if (flag == 1):
-                roles, resource_table = rl.read_resource_pool(resources_list_happy, sim_percentage=0.0, k=k,
-                                                              quantity_by_cost=quantity_by_cost,
-                                                              reverse_cost=reverse_cost, happy_path=happy_path)
-            elif (flag == 2):
-                roles, resource_table = rl.read_resource_pool(resources_list_happy, drawing=False,
-                                                              sim_percentage=sim_percentage,
-                                                              quantity_by_cost=quantity_by_cost,
-                                                              reverse_cost=reverse_cost, happy_path=happy_path)
+                # Analysing resource pool LV917 or 247
+                if (flag == 1):
+                    roles, resource_table = rl.read_resource_pool(resources_list_happy, sim_percentage=0.0, k=k,
+                                                                  quantity_by_cost=quantity_by_cost,
+                                                                  reverse_cost=reverse_cost, happy_path=happy_path)
+                elif (flag == 2):
+                    roles, resource_table = rl.read_resource_pool(resources_list_happy, drawing=False,
+                                                                  sim_percentage=sim_percentage,
+                                                                  quantity_by_cost=quantity_by_cost,
+                                                                  reverse_cost=reverse_cost, happy_path=happy_path)
 
-            print("--- Modified Resource Pool ---")
-            rolesdf = pd.DataFrame(columns=['Role', 'Quantity', 'Members'])
-            for role in roles:
-                if flag == 1:
-                    rolesdf = rolesdf.append(
-                        {'Role': role['role'], 'Quantity': role['lenRole'], 'Members': role['resource']},
-                        ignore_index=True)
-                elif flag == 2:
-                    rolesdf = rolesdf.append(
-                        {'Role': role['role'], 'Quantity': role['quantity'], 'Members': role['members']},
-                        ignore_index=True)
-
-            if graph_roles_flag:
-                graph_roles_new = pd.DataFrame(columns=['Role', 'Member'])
+                print("--- Modified Resource Pool ---")
+                rolesdf = pd.DataFrame(columns=['Role', 'Quantity', 'Members'])
                 for role in roles:
                     if flag == 1:
-                        for member in role['resource']:
-                            graph_roles_new = graph_roles_new.append(
-                                {'Role': role['role'].split()[1], 'Member': member},
-                                ignore_index=True)
+                        rolesdf = rolesdf.append(
+                            {'Role': role['role'], 'Quantity': role['lenRole'], 'Members': role['resource']},
+                            ignore_index=True)
                     elif flag == 2:
-                        for member in role['members']:
-                            graph_roles_new = graph_roles_new.append(
-                                {'Role': role['role'].split()[1], 'Member': member},
-                                ignore_index=True)
+                        rolesdf = rolesdf.append(
+                            {'Role': role['role'], 'Quantity': role['quantity'], 'Members': role['members']},
+                            ignore_index=True)
 
-            print(rolesdf.to_string())
-            # TODO: Create array of possible time tables based on the log and return so it can be print in the global config file for scylla
-            resource_pool, time_table, resource_table = sch.analize_schedules(resource_table, log, True,
-                                                                              'LV917')
-            # -------------------------------------------------------------------
-            # Process replaying
-            conformed_traces, not_conformed_traces, process_stats = rpl.replay(process_graph, log,
-                                                                               resource_table=resource_table)
-            # -------------------------------------------------------------------
-            # Adding role to process stats
-            for stat in process_stats:
-                roleArray = list(filter(lambda x: x['resource'] == stat['resource'], resource_table))
-                # print(roleArray)
-                if (roleArray != []):
-                    role = roleArray[0]['role']
-                stat['role'] = role
+                if graph_roles_flag:
+                    graph_roles_new = pd.DataFrame(columns=['Role', 'Member'])
+                    for role in roles:
+                        if flag == 1:
+                            for member in role['resource']:
+                                graph_roles_new = graph_roles_new.append(
+                                    {'Role': role['role'].split()[1], 'Member': member},
+                                    ignore_index=True)
+                        elif flag == 2:
+                            for member in role['members']:
+                                graph_roles_new = graph_roles_new.append(
+                                    {'Role': role['role'].split()[1], 'Member': member},
+                                    ignore_index=True)
+
+                print(rolesdf.to_string())
+                # TODO: Create array of possible time tables based on the log and return so it can be print in the global config file for scylla
+                resource_pool, time_table, resource_table = sch.analize_schedules(resource_table, log, True,
+                                                                                  'LV917')
+                # -------------------------------------------------------------------
+                # Process replaying
+                conformed_traces, not_conformed_traces, process_stats = rpl.replay(process_graph, log,
+                                                                                   resource_table=resource_table)
+                # -------------------------------------------------------------------
+                # Adding role to process stats
+                for stat in process_stats:
+                    roleArray = list(filter(lambda x: x['resource'] == stat['resource'], resource_table))
+                    # print(roleArray)
+                    if (roleArray != []):
+                        role = roleArray[0]['role']
+                    stat['role'] = role
 
         # for resource in resource_table:
         #     total_diff_time = 0
@@ -219,6 +224,7 @@ def extract_parameters(log, bpmn, process_graph, flag, k, sim_percentage, simula
         elements_data_scylla = list()
         elements_data_bimp = list()
         i = 0
+        role_not_set = find_resource_role(resource_pool, 'NOT_SET', True)
         task_list = list(filter(lambda x: process_graph.node[x]['type'] == 'task', list(nx.nodes(process_graph))))
         for sim in simulator:
             for task in task_list:
@@ -245,9 +251,9 @@ def extract_parameters(log, bpmn, process_graph, flag, k, sim_percentage, simula
                 elif sim == 'scylla':
                     dist_scylla = td.get_task_distribution(task_processing, simulator=sim)
                     if flag == 1:
-                        role_per_task = list(filter(lambda x:x['task']==task_name,roles))
+                        role_per_task = list(filter(lambda x: x['task'] == task_name, roles))
 
-                        if(len(role_per_task)>0):
+                        if (len(role_per_task) > 0):
                             role_per_task = role_per_task[0]['role']
                             elements_data_scylla.append(
                                 dict(id=sup.gen_id(), elementid=task_id, type=dist_scylla['dname'], name=task_name,
@@ -255,16 +261,30 @@ def extract_parameters(log, bpmn, process_graph, flag, k, sim_percentage, simula
                                      arg2=str(dist_scylla['dparams']['arg2']),
                                      resource=find_resource_id(resource_pool, role_per_task)))
                         else:
-                            #print(task_name)
+                            # print(task_name)
                             continue
                     elif flag == 2:
                         max_role, max_count = '', 0
                         role_sorted = sorted(values, key=lambda x: x['role'])
-                        for key2, group2 in itertools.groupby(role_sorted, key=lambda x: x['role']):
+                        filter1 = False
+                        groupby_role = itertools.groupby(role_sorted, key=lambda x: x['role'])
+                        counter = 0
+                        max_role_not_set, max_count_not_set = '', 0
+                        for key2, group2 in groupby_role:
                             group_count = list(group2)
                             if len(group_count) > max_count:
-                                max_count = len(group_count)
-                                max_role = key2
+                                # any_resource = group_count[0]['resource']
+                                if key2 == role_not_set:
+                                    max_count_not_set = len(group_count)
+                                    max_role_not_set = key2
+                                    filter1 = True
+                                else:
+                                    max_count = len(group_count)
+                                    max_role = key2
+                                counter += 1
+                        if counter == 1 and filter1 is True:
+                            max_role = max_role_not_set
+                            max_count = max_count_not_set
                         elements_data_scylla.append(
                             dict(id=sup.gen_id(), elementid=task_id, type=dist_scylla['dname'], name=task_name,
                                  mean=str(dist_scylla['dparams']['mean']), arg1=str(dist_scylla['dparams']['arg1']),
@@ -307,3 +327,17 @@ def find_resource_id(resource_pool, resource_name):
             id = resource['id']
             break
     return id
+
+
+def find_resource_role(resource_pool, resource_name, name):
+    role = ''
+    found = False
+    for resource in resource_pool:
+        for instance in resource['instances']:
+            if instance['resource'] == resource_name:
+                role = resource['name'] if name else resource['id']
+                found = True
+                break
+        if found:
+            break
+    return role
