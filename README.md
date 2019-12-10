@@ -88,7 +88,7 @@ The resulted elements are:
     
 ![General perspective Simod+Resources](images/Arquitectura_general_tesis-3.png)
 
-Pipe-Line flow architecture
+##### Pipe-Line flow architecture
 ![Simod+Resources Architecture](images/Arquitectura_general_tesis-2.png)
 
 ### Project Folders and files
