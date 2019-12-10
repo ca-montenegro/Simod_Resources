@@ -26,8 +26,8 @@ As an extra element for this thesis project, per input log in XES format, is req
 ### Execution steps without Anaconda
 ```
 cd Simod_recursos_scylla
-pip3 install -r requirements.txt
-python3 main.py
+pip install -r requirements.txt
+python main.py
 ```
 
 ### Execution steps with Anaconda 
@@ -37,7 +37,7 @@ cd Simod_recursos_scylla
 conda env create -f SimodResourcesEnv.yml (For Windows OS)
 conda env create -f SimodResourcesEnvMacOS.yml (For Mac OS Related)
 conda activate SimodResourcesEnv[MacOs]
-python3 main.py
+python main.py
 ```
 #### Using Anaconda GUI
 ```
