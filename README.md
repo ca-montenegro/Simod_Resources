@@ -86,10 +86,10 @@ The resulted elements are:
  - Resource Configuration also know as the resources pools
  - KPIs of the executed BPS using Scylla
     
-![General perspective Simod+Resources](images/Arquitectura general tesis-3.png)
+![General perspective Simod+Resources](images/Arquitectura_general_tesis-3.png)
 
 Pipe-Line flow architecture
-![Simod+Resources Architecture](images/Arquitectura general tesis-2.png)
+![Simod+Resources Architecture](images/Arquitectura_general_tesis-2.png)
 
 ### Project Folders and files
 Besides the modules showed in the previous Architecture image, the project folder have some important folders to take into account.
