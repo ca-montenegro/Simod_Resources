@@ -26,7 +26,7 @@ As an extra element for this thesis project, per input log in XES format, is req
 ### Execution steps without Anaconda
 ```
 cd Simod_recursos_scylla
-pip3 install -r requirements1.txt
+pip3 install -r requirements.txt
 python3 main.py
 ```
 
