@@ -93,14 +93,14 @@ The resulted elements are:
 
 ### Project Folders and files
 Besides the modules showed in the previous Architecture image, the project folder have some important folders to take into account.
- - Config.ini file. Configuration file for the process.
- - Main.py file. Main execution file 
- - Inputs/: Folder that contains all the event logs files, if any new log wants to be try in the tool here is the folder to add it. 
- - Outputs/: Folder that contains all the outputs folders and files of the execution.
+ - **Config.ini** file. Configuration file for the process.
+ - **Main.py** file. Main execution file 
+ - **Inputs/**: Folder that contains all the event logs files, if any new log wants to be try in the tool here is the folder to add it. 
+ - **Outputs/**: Folder that contains all the outputs folders and files of the execution.
     - If the tool performed an optimization process, a new folder starting with "Optimization", and then a timestamp, will be create. This folder contains the following elements:
         - A graph showing the overall results of the execution (kpiResultsGraph.png)
         - A table showing the same results as the graph but in a numeric way (kpiResultsTable.csv)
-        - Inside this folder is possible to find one folder per resource configuration that contains:
+        - Inside this folder is possible to find one folder, with a timestamps as name, per resource configuration that contains:
             - The event log file (.xes file)
             - The BPMN process file (.bpmn file)
             - Scylla Global configuration file (.xml File)
