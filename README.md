@@ -8,6 +8,7 @@ These instructions will get you a copy of the project up and running on your loc
 ### System Prerequisites
  - Python 3.x
  - Java SDK 1.8
+ - Anaconda Distribution
 
 ### Data format
 
@@ -22,10 +23,18 @@ As an extra element for this thesis project, per input log in XES format, is req
 ```
 
 
-### Execution steps
+### Execution steps without Anaconda
 ```
 cd Simod_recursos_scylla
 pip3 install -r requirements1.txt
+python3 main.py
+```
+
+### Execution steps with Anaconda
+```
+cd Simod_recursos_scylla
+conda env create -f SimodResourcesEnv.yml
+conda activate SimodResourcesEnv
 python3 main.py
 ```
 
