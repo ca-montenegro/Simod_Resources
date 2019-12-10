@@ -30,12 +30,29 @@ pip3 install -r requirements1.txt
 python3 main.py
 ```
 
-### Execution steps with Anaconda
+### Execution steps with Anaconda 
+#### Using terminal
 ```
 cd Simod_recursos_scylla
-conda env create -f SimodResourcesEnv.yml
-conda activate SimodResourcesEnv
+conda env create -f SimodResourcesEnv.yml (For Windows OS)
+conda env create -f SimodResourcesEnvMacOS.yml (For Mac OS Related)
+conda activate SimodResourcesEnv[MacOs]
 python3 main.py
+```
+#### Using Anaconda GUI
+```
+Open Anaconda GUI
+Environments Tab
+Import
+Select either:
+- SimodResourcesEnv.yml (For Windows OS)
+- SimodResourcesEnvMacOS.yml (For Mac OS Related)
+Import
+Wait for every library to install
+Click Play button next to the environment name and select open Terminal
+In Terminal:
+- cd Simod_recursos_scylla
+- python main.py
 ```
 
 ### Process configuration
@@ -47,14 +64,58 @@ The process can be setup in the file config.ini to execute different user prefer
  - (1) Preferences assignation policy: Finding 'm' clusters with the k most frequent resources performing an specific task, where 'm' represents the number of total activities.
  - (2) Similitude: Clustering resources by a defined percentage of similarity.
 [EXECUTION][k]: Variable that represents the k most frequent resources. Range in the form of 'min_k, max_k' e.g '4,8'. Min_k represents the lowest value to start finding the clusters with the k most frequent resources performing an specific task, and max_k represents the upper value of this range.
-[EXECUTION][sim_percentage]: Similarity percentage in case the flag 2 was selected. (Value between 0 and 100)
+ - k = 1,21 Recommended configuration for the Purchasing Example Log
+ - k = 1,24 Recommended configuration for the Production Example Log
+ - k = 1,21 Recommended configuration for the Hospital-Emergency Example Log
+[EXECUTION][sim_percentage]: Similarity percentage in case the flag 2 was selected. (Value between 0 and 100. E.g: 0.1)
 [EXECUTION][happy_path]: True or False variable that represents the quality assignation policy. In this case the tool will determine the happy path of the process.
 [EXECUTION][simulator]: Choose the simulator of preference. For this project we are only using Scylla, for future implementations will be possible to include more simulators though.
 [EXECUTION][optimization]: True or False variable that define whenever you want to optimize the search. If this is selected the [OPTIMIZATION] section must be fill out.
-
 [OPTIMIZATION][objective]: Define the variable to optimize. Choose among: flowTime_avg, cost_total, waiting_avg, time_workload_avg.
 [OPTIMIZATION][criteria]: Choose the optimization criteria. 'min' for minimization or 'max' for maximization.
 ```
+### Architecture
+
+The tool receive as input tree main elements:
+ - XES Log Event
+ - Resource Assignation Policy
+ - Business KPI objective (Optimization) 
+ 
+The resulted elements are:
+ - Business Simulation Model (BPS)
+ - Resource Configuration also know as the resources pools
+ - KPIs of the executed BPS using Scylla
+    
+![General perspective Simod+Resources](images/Arquitectura general tesis-3.png)
+
+Pipe-Line flow architecture
+![Simod+Resources Architecture](images/Arquitectura general tesis-2.png)
+
+### Project Folders and files
+Besides the modules showed in the previous Architecture image, the project folder have some important folders to take into account.
+ - Config.ini file. Configuration file for the process.
+ - Main.py file. Main execution file 
+ - Inputs/: Folder that contains all the event logs files, if any new log wants to be try in the tool here is the folder to add it. 
+ - Outputs/: Folder that contains all the outputs folders and files of the execution.
+    - If the tool performed an optimization process, a new folder starting with "Optimization", and then a timestamp, will be create. This folder contains the following elements:
+        - A graph showing the overall results of the execution (kpiResultsGraph.png)
+        - A table showing the same results as the graph but in a numeric way (kpiResultsTable.csv)
+        - Inside this folder is possible to find one folder per resource configuration that contains:
+            - The event log file (.xes file)
+            - The BPMN process file (.bpmn file)
+            - Scylla Global configuration file (.xml File)
+            - Scylla Simulation configuration file (.xml File)
+            - Resources detail table. (Associated Costs, role, activity, etc.)
+            - Resource Cluster graph. Graph(s) showing the initial and/or final configuration of the resources.
+            - Folder per simulation execution in Scylla containing the following elements (ScyllaSim_rep_1):
+                - File that represents the log event of the simulation (.xes file)
+                - File that represents the results of the whole simulation (.xml file)
+            - Folder that contains the simulation results (ResourceUtilizationResults)
+                - CSV table showing the instances data for the simulation (.csv file)
+                - CSV table showing the overall process Metadata (.csv file)
+                - CSV table showing the resources utilization. Here is possible to see the utilization per role and instances in each role (.csv file)
+            
+    
 
 ## Authors
 
