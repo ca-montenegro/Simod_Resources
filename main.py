@@ -46,6 +46,7 @@ def mining_structure(settings, epsilon, eta):
         eta (double): Percentile for frequency threshold (eta) in [0,1]
     """
     print(" -- Mining Process Structure --")
+    print(settings['miner_path'])
     args = ['java', '-jar', settings['miner_path'],
             str(epsilon), str(eta),
             os.path.join(settings['output'], settings['file']),
